@@ -88,16 +88,16 @@ const BookingCalendar = () => {
 
   return (
     <div className="container">
-      <h2 style={{ marginBottom: '20px', color: '#667eea' }}>Booking Calendar</h2>
+      <h2 style={{ marginBottom: '20px', color: '#667eea' }}>📅 Booking Calendar</h2>
 
       {restaurant && (
         <div className="info" style={{ marginBottom: '20px' }}>
-          <strong>{restaurant.name}</strong> - Total Capacity: {restaurant.totalSeats} seats
+          🏪 <strong>{restaurant.name}</strong> - Total Capacity: {restaurant.totalSeats} seats
         </div>
       )}
 
       <div className="form-group" style={{ maxWidth: '300px', marginBottom: '30px' }}>
-        <label>Select Date:</label>
+        <label>📆 Select Date:</label>
         <DatePicker
           selected={selectedDate}
           onChange={(date) => setSelectedDate(date)}
@@ -111,7 +111,10 @@ const BookingCalendar = () => {
       </h3>
 
       {loading ? (
-        <div className="loading">Loading schedule...</div>
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Loading schedule...</p>
+        </div>
       ) : (
         <div className="grid grid-2">
           {timeSlots.map((slot) => {
@@ -121,9 +124,19 @@ const BookingCalendar = () => {
             const availableSeats = availability.availableSeats || 0;
             const bookedSeats = availability.bookedSeats || 0;
             const occupancyRate = totalSeats > 0 ? (bookedSeats / totalSeats * 100).toFixed(0) : 0;
+            
+            let cardClass = 'calendar-slot-card ';
+            if (availableSeats === 0) cardClass += 'full';
+            else if (availableSeats < 10) cardClass += 'limited';
+            else cardClass += 'available';
+
+            let progressClass = 'progress-fill ';
+            if (occupancyRate < 50) progressClass += 'low';
+            else if (occupancyRate < 80) progressClass += 'medium';
+            else progressClass += 'high';
 
             return (
-              <div key={slot} className="card">
+              <div key={slot} className={cardClass}>
                 <div className="card-header" style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between',
@@ -138,8 +151,20 @@ const BookingCalendar = () => {
                   </span>
                 </div>
                 <div className="card-body">
-                  <div style={{ marginBottom: '10px' }}>
-                    <strong>Capacity:</strong> {bookedSeats} / {totalSeats} seats ({occupancyRate}% full)
+                  <div style={{ marginBottom: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span><strong>Capacity:</strong></span>
+                      <span>{bookedSeats} / {totalSeats} seats</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div 
+                        className={progressClass}
+                        style={{ width: `${occupancyRate}%` }}
+                      ></div>
+                    </div>
+                    <div style={{ textAlign: 'center', fontSize: '0.85rem', color: '#666', marginTop: '5px' }}>
+                      {occupancyRate}% full
+                    </div>
                   </div>
                   
                   {slotBookings.length > 0 ? (

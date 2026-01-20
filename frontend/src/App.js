@@ -12,8 +12,8 @@ function App() {
   return (
     <div className="App">
       <div className="header">
-        <h1>🍽️ Restaurant Seat Booking</h1>
-        <p>Book your table for an amazing dining experience</p>
+        <h1>Restaurant Seat Booking</h1>
+        <p>Book your seats for an amazing dining experience</p>
       </div>
 
       <div className="nav">

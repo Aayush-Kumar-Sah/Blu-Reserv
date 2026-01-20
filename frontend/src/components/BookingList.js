@@ -6,6 +6,9 @@ const BookingList = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, confirmed, cancelled
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('date'); // date, name, seats
+  const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
     fetchBookings();
@@ -65,41 +68,141 @@ const BookingList = () => {
     });
   };
 
-  const filteredBookings = bookings.filter(booking => {
-    if (filter === 'all') return true;
-    return booking.status === filter;
-  });
+  const getStatistics = () => {
+    const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+    const cancelled = bookings.filter(b => b.status === 'cancelled').length;
+    const totalSeats = bookings
+      .filter(b => b.status === 'confirmed')
+      .reduce((sum, b) => sum + b.numberOfSeats, 0);
+    return { confirmed, cancelled, total: bookings.length, totalSeats };
+  };
+
+  const filteredAndSortedBookings = bookings
+    .filter(booking => {
+      // Filter by status
+      if (filter !== 'all' && booking.status !== filter) return false;
+      
+      // Filter by search term
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          booking.customerName.toLowerCase().includes(searchLower) ||
+          booking.customerEmail.toLowerCase().includes(searchLower) ||
+          booking.customerPhone.includes(searchTerm)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'date':
+          comparison = new Date(a.bookingDate) - new Date(b.bookingDate);
+          break;
+        case 'name':
+          comparison = a.customerName.localeCompare(b.customerName);
+          break;
+        case 'seats':
+          comparison = a.numberOfSeats - b.numberOfSeats;
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
 
   if (loading) {
-    return <div className="loading">Loading bookings...</div>;
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading bookings...</p>
+      </div>
+    );
   }
+
+  const stats = getStatistics();
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ color: '#667eea' }}>All Bookings</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h2 style={{ color: '#667eea', margin: 0 }}>📋 All Bookings</h2>
         <button onClick={fetchBookings} className="btn btn-secondary">
-          Refresh
+          🔄 Refresh
         </button>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ marginRight: '10px', fontWeight: '600' }}>Filter by Status:</label>
-        <select 
-          value={filter} 
-          onChange={(e) => setFilter(e.target.value)}
-          style={{ padding: '8px 12px', borderRadius: '6px', border: '2px solid #e0e0e0' }}
-        >
-          <option value="all">All Bookings</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+      {/* Statistics Cards */}
+      <div className="stats-grid">
+        <div className="stat-card stat-primary">
+          <div className="stat-value">{stats.total}</div>
+          <div className="stat-label">Total Bookings</div>
+        </div>
+        <div className="stat-card stat-success">
+          <div className="stat-value">{stats.confirmed}</div>
+          <div className="stat-label">Confirmed</div>
+        </div>
+        <div className="stat-card stat-danger">
+          <div className="stat-value">{stats.cancelled}</div>
+          <div className="stat-label">Cancelled</div>
+        </div>
+        <div className="stat-card stat-info">
+          <div className="stat-value">{stats.totalSeats}</div>
+          <div className="stat-label">Total Seats Booked</div>
+        </div>
       </div>
 
-      {filteredBookings.length === 0 ? (
-        <div className="info">No bookings found.</div>
+      {/* Filters and Search */}
+      <div className="filters-container">
+        <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+          <input
+            type="text"
+            placeholder="🔍 Search by name, email, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ marginBottom: 0 }}
+          />
+        </div>
+        
+        <div className="form-group" style={{ marginBottom: 0, minWidth: '150px' }}>
+          <select 
+            value={filter} 
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="confirmed">✓ Confirmed</option>
+            <option value="cancelled">✗ Cancelled</option>
+          </select>
+        </div>
+
+        <div className="form-group" style={{ marginBottom: 0, minWidth: '150px' }}>
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="date">Sort by Date</option>
+            <option value="name">Sort by Name</option>
+            <option value="seats">Sort by Seats</option>
+          </select>
+        </div>
+
+        <button 
+          className="btn btn-secondary"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+          style={{ padding: '12px 20px' }}
+        >
+          {sortOrder === 'asc' ? '↑' : '↓'}
+        </button>
+      </div>
+
+      {filteredAndSortedBookings.length === 0 ? (
+        <div className="info">No bookings found matching your criteria.</div>
       ) : (
         <div className="table-container" style={{ overflowX: 'auto' }}>
+          <div style={{ marginBottom: '10px', color: '#666', fontSize: '0.9rem' }}>
+            Showing {filteredAndSortedBookings.length} of {bookings.length} bookings
+          </div>
           <table className="table">
             <thead>
               <tr>
@@ -114,7 +217,7 @@ const BookingList = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredBookings.map((booking) => (
+              {filteredAndSortedBookings.map((booking) => (
                 <tr key={booking._id}>
                   <td>{booking.customerName}</td>
                   <td>{booking.customerEmail}</td>
