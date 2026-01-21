@@ -29,14 +29,14 @@ app.get('/', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
-    success: false, 
+  res.status(500).json({
+    success: false,
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5555;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
