@@ -27,41 +27,84 @@ A full-stack restaurant seat booking system built with React, Node.js, Express, 
 - CORS enabled
 - Environment variables with dotenv
 
+## Architecture & Code Flow
+
+This section details how the different parts of the application interact to provide a seamless booking experience.
+
+### High-Level Overview
+The application follows a standard **Client-Server-Database** architecture:
+
+1.  **Frontend (React)**: The user interface where customers interact with the system (view availability, book seats).
+2.  **Backend (Express/Node.js)**: The RESTful API that handles business logic, validation, and database interactions.
+3.  **Database (MongoDB)**: Stores persistent data like bookings and restaurant settings.
+
+---
+
+### 1. Frontend Architecture (`frontend/`)
+
+The frontend is a React Single Page Application (SPA).
+
+*   **Entry Point**: `src/index.js` bootstraps the React app by rendering `src/App.js` into the DOM.
+*   **Routing (`src/App.js`)**: Uses `react-router-dom` to manage navigation:
+    *   `/` -> **LandingPage**: A static welcome page with a "Start" button.
+    *   `/app` -> **MainApp**: The core booking application dashboard.
+*   **Main Application (`src/components/MainApp.js`)**: Manages the state of the active view (`form`, `calendar`, `list`) and renders the corresponding components:
+    *   **BookingForm**: A form to capture customer details and desired booking time. It calls `checkAvailability` API on date/time selection.
+    *   **BookingCalendar**: Displays a visual calendar to see bookings per day.
+    *   **BookingList**: A list view of all bookings, allowing cancellation or deletion.
+*   **API Layer (`src/services/api.js`)**: A centralized Axios instance configured with the base URL. It exports methods like `bookingAPI.createBooking` or `bookingAPI.checkAvailability` that components use to fetch data. This decouples UI components from direct HTTP calls.
+
+### 2. Backend Architecture (`backend/`)
+
+The backend is an Express.js server providing a JSON API.
+
+*   **Entry Point**: `server.js` initializes the Express app, connects to MongoDB via `config/db.js`, sets up middleware (CORS, Body Parser), and mounts routes.
+*   **Routes (`backend/routes/`)**:
+    *   `bookingRoutes.js`: Maps HTTP endpoints (e.g., `POST /`, `GET /availability`) to controller functions.
+    *   `restaurantRoutes.js`: Handles restaurant configuration endpoints.
+*   **Controllers (`backend/controllers/`)**: Contains the business logic:
+    *   `bookingController.js`:
+        *   `createBooking`: Validates input -> Checks capacity (Total Seats - Booked Seats) -> Saves booking -> Returns success.
+        *   `checkAvailability`: Aggregates confirmed bookings for a specific slot to calculate remaining seats.
+*   **Data Models (`backend/models/`)**: Mongoose schemas defining data structure:
+    *   `Booking.js`: Stores customer info, date, time slot, seat count, and status (`confirmed`, `cancelled`).
+    *   `Restaurant.js`: Stores global settings like total seats, opening hours, etc.
+
+---
+
+### 3. Data Flow Example: Creating a Booking
+
+1.  **User Action**: User selects a date and time on the `BookingForm`.
+2.  **Frontend Check**: `BookingForm` calls `bookingAPI.checkAvailability(date, time)`.
+3.  **API Request**: Frontend sends `GET /api/bookings/availability?date=...&timeSlot=...` to Backend.
+4.  **Backend Logic**:
+    *   `bookingController.checkAvailability` runs.
+    *   Queries `Restaurant` model for total seats (default 50).
+    *   Queries `Booking` model for all *confirmed* bookings at that time.
+    *   Calculates `Available = Total - Sum(Booked)`.
+    *   Returns JSON `{ availableSeats: 5 }`.
+5.  **UI Update**: Frontend displays "5 seats available".
+6.  **Submission**: User clicks "Book".
+7.  **Final Validation**: Backend performs the check *again* (concurrency safety) before saving to ensure seats weren't taken in the interim.
+8.  **Persistence**: Booking is saved to MongoDB.
+
 ## Project Structure
 
 ```
 SeatBooking/
 ├── backend/
-│   ├── config/
-│   │   └── db.js
-│   ├── controllers/
-│   │   ├── bookingController.js
-│   │   └── restaurantController.js
-│   ├── models/
-│   │   ├── Booking.js
-│   │   └── Restaurant.js
-│   ├── routes/
-│   │   ├── bookingRoutes.js
-│   │   └── restaurantRoutes.js
-│   ├── .env
-│   ├── .gitignore
-│   ├── package.json
-│   └── server.js
+│   ├── config/             # Database connection logic
+│   ├── controllers/        # Request handlers (Business logic)
+│   ├── models/             # Mongoose schemas (Data definitions)
+│   ├── routes/             # API route definitions
+│   └── server.js           # App entry point & configuration
 └── frontend/
-    ├── public/
-    │   └── index.html
     ├── src/
-    │   ├── components/
-    │   │   ├── BookingForm.js
-    │   │   ├── BookingList.js
-    │   │   └── BookingCalendar.js
-    │   ├── services/
-    │   │   └── api.js
-    │   ├── App.css
-    │   ├── App.js
-    │   └── index.js
-    ├── .gitignore
-    └── package.json
+    │   ├── components/     # UI Components (Forms, Lists, Calendar)
+    │   ├── services/       # API integration service
+    │   ├── App.js          # Routing configuration
+    │   ├── MainApp.js      # Main dashboard layout
+    │   └── LandingPage.js  # Welcome page
 ```
 
 ## Setup Instructions
@@ -137,45 +180,6 @@ SeatBooking/
 - `GET /` - Get restaurant settings
 - `PUT /` - Update restaurant settings
 - `GET /timeslots` - Get available time slots
-
-## Default Configuration
-
-- **Total Seats**: 50
-- **Operating Hours**: 10:00 AM - 10:00 PM
-- **Time Slot Duration**: 1 hour
-- **Booking Range**: 1-20 seats per booking
-
-## Usage
-
-1. **Create a Booking**:
-   - Navigate to "New Booking"
-   - Fill in customer details
-   - Select date and time slot
-   - Choose number of seats
-   - Add special requests (optional)
-   - Submit the form
-
-2. **View Calendar**:
-   - Navigate to "Calendar View"
-   - Select a date to see all bookings
-   - View availability for each time slot
-
-3. **Manage Bookings**:
-   - Navigate to "All Bookings"
-   - Filter by status (all/confirmed/cancelled)
-   - Cancel or delete bookings
-
-## Future Enhancements
-
-- User authentication (customer and admin roles)
-- Email notifications
-- SMS reminders
-- Table management
-- Multiple restaurant support
-- Payment integration
-- Booking history
-- Reviews and ratings
-- Waitlist functionality
 
 ## License
 

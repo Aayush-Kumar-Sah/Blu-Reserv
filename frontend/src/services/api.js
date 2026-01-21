@@ -38,4 +38,9 @@ export const restaurantAPI = {
   getTimeSlots: () => api.get('/restaurant/timeslots'),
 };
 
+// Manager APIs
+export const managerAPI = {
+  login: (credentials) => api.post('/manager/login', credentials),
+};
+
 export default api;

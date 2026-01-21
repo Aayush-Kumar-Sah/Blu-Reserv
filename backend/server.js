@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 
 const bookingRoutes = require('./routes/bookingRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
+const managerRoutes = require('./routes/managerRoutes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurant', restaurantRoutes);
+app.use('/api/manager', managerRoutes);
 
 // Health check
 app.get('/', (req, res) => {
