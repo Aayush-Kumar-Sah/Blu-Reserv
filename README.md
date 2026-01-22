@@ -128,8 +128,8 @@ SeatBooking/
 
 3. Configure environment variables in `.env`:
    ```
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/restaurant-booking
+   PORT=5555
+   MONGODB_URI= your mongodb connection string
    NODE_ENV=development
    ```
 
