@@ -16,7 +16,7 @@ body {
 .App {
   min-height: 100vh;
   padding: 20px;
-  background: 
+  background:
     linear-gradient(rgba(30, 30, 40, 0.85), rgba(20, 20, 30, 0.90)),
     url(/public/images/IBM-food-court-5.jpg) center/cover fixed;
   background-size: cover;
@@ -452,8 +452,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Enhanced Card Styles */
@@ -519,6 +524,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -530,9 +536,12 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -918,7 +927,7 @@ body {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at 20% 50%, rgba(139, 69, 19, 0.1), transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(101, 67, 33, 0.1), transparent 50%);
+    radial-gradient(circle at 80% 80%, rgba(101, 67, 33, 0.1), transparent 50%);
   pointer-events: none;
 }
 
@@ -927,7 +936,7 @@ body {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 24px;
-  box-shadow: 
+  box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.1);
   max-width: 720px;
@@ -977,8 +986,17 @@ body {
 }
 
 @keyframes logoGlow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
 }
 
 .premium-title {
@@ -1170,6 +1188,7 @@ body {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1410,6 +1429,7 @@ body {
     opacity: 0;
     transform: translateY(-5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1465,4 +1485,70 @@ body {
   .filters-container .form-group {
     width: 100%;
   }
+}
+
+/* Landing Page */
+.landing-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(rgba(30, 30, 40, 0.7), rgba(20, 20, 30, 0.8)),
+    url(https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80) center/cover no-repeat;
+  color: white;
+  text-align: center;
+}
+
+.landing-content {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 50px 80px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.8s ease-out;
+}
+
+.landing-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.landing-subtitle {
+  font-size: 1.5rem;
+  color: #e0e0e0;
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+.start-button {
+  padding: 18px 50px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.start-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.start-button:active {
+  transform: translateY(1px);
 }
