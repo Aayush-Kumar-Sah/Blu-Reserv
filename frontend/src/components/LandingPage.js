@@ -6,17 +6,13 @@ const LandingPage = () => {
     const navigate = useNavigate();
 
     const handleIBMAuth = () => {
-        const clientId = 'ODcxNDlkMDEtN2E1OS00';
-        const redirectUri = encodeURIComponent('http://localhost:3000/callback');
-        const scope = encodeURIComponent('openid profile email');
-        const responseType = 'code';
-
         const authUrl =
-            'https://test.login.w3.ibm.com/oidc/endpoint/default/.well-known/openid-configuration' +
-            `?client_id=${clientId}` +
-            `&response_type=${responseType}` +
-            `&scope=${scope}` +
-            `&redirect_uri=${redirectUri}`;
+            'https://test.login.w3.ibm.com/v1.0/endpoint/default/authorize' +
+            `?response_type=code` +
+            `&client_id=ODcxNDlkMDEtN2E1OS00` +
+            `&redirect_uri=${encodeURIComponent('http://localhost:3000/callback')}` +
+            `&scope=${encodeURIComponent('openid profile email')}` +
+            `&prompt=login`;
 
         window.location.href = authUrl;
     };
