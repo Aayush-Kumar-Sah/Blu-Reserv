@@ -1,15 +1,52 @@
 const express = require('express');
+const axios = require('axios');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 router.post('/callback', async (req, res) => {
   const { code } = req.body;
 
-  // For now, just log it
-  console.log('Received auth code:', code);
+  try {
+    const tokenRes = await axios.post(
+      process.env.W3ID_TOKEN_URL,
+      new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: 'http://localhost:3000/callback',
+        client_id: process.env.W3ID_CLIENT_ID,
+        client_secret: process.env.W3ID_CLIENT_SECRET,
+      }),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
 
-  // Later: exchange code with w3id token endpoint
+    const { id_token } = tokenRes.data;
 
-  res.json({ success: true });
+    // Decode ID token (NO validation needed for intern project)
+    const decoded = jwt.decode(id_token);
+
+    /*
+      decoded now contains:
+      - emailAddress
+      - firstName
+      - lastName
+      - uid (employee_id)
+    */
+
+    console.log('IBM User:', decoded.emailAddress);
+
+    res.json({
+      success: true,
+      user: {
+        email: decoded.emailAddress,
+        firstName: decoded.firstName,
+        lastName: decoded.lastName,
+        employeeId: decoded.uid,
+      },
+    });
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).json({ success: false });
+  }
 });
 
 module.exports = router;

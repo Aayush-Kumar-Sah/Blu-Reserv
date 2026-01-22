@@ -6,9 +6,19 @@ const LandingPage = () => {
     const navigate = useNavigate();
 
     const handleIBMAuth = () => {
-        console.log('SSO started');
-        // Placeholder for SSO logic
-        alert('IBM SSO Auth integration to be implemented');
+        const clientId = 'ODcxNDlkMDEtN2E1OS00';
+        const redirectUri = encodeURIComponent('http://localhost:3000/callback');
+        const scope = encodeURIComponent('openid profile email');
+        const responseType = 'code';
+
+        const authUrl =
+            'https://test.login.w3.ibm.com/oidc/endpoint/default/.well-known/openid-configuration' +
+            `?client_id=${clientId}` +
+            `&response_type=${responseType}` +
+            `&scope=${scope}` +
+            `&redirect_uri=${redirectUri}`;
+
+        window.location.href = authUrl;
     };
 
     return (
