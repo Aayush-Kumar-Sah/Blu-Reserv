@@ -121,8 +121,40 @@ const BookingForm = ({ onBookingSuccess }) => {
   const handleDateChange = (date) => {
     setFormData(prev => ({
       ...prev,
-      bookingDate: date
+      bookingDate: date,
+      timeSlot: '' // Reset time slot when date changes
     }));
+  };
+
+  // Filter time slots based on current time if booking is for today
+  const getAvailableTimeSlots = () => {
+    const today = new Date();
+    const selectedDate = new Date(formData.bookingDate);
+    
+    // Reset time parts for date comparison
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    // If booking is not for today, show all slots
+    if (selectedDate.getTime() !== today.getTime()) {
+      return timeSlots;
+    }
+    
+    // If booking is for today, filter out past slots
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+    
+    return timeSlots.filter(slot => {
+      // Extract start time from slot (format: "HH:MM-HH:MM")
+      const startTime = slot.split('-')[0].trim();
+      const [slotHour, slotMinute] = startTime.split(':').map(Number);
+      const slotTimeInMinutes = slotHour * 60 + slotMinute;
+      
+      // Only show slots that haven't started yet
+      return slotTimeInMinutes > currentTimeInMinutes;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -302,16 +334,27 @@ const BookingForm = ({ onBookingSuccess }) => {
             <div className="premium-input-group">
               <label className="premium-label">Choose Time</label>
               <div className="premium-time-grid">
-                {timeSlots.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    className={`premium-time-slot ${formData.timeSlot === slot ? 'selected' : ''}`}
-                    onClick={() => setFormData(prev => ({ ...prev, timeSlot: slot }))}
-                  >
-                    {slot}
-                </button>
-              ))}
+                {getAvailableTimeSlots().length > 0 ? (
+                  getAvailableTimeSlots().map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={`premium-time-slot ${formData.timeSlot === slot ? 'selected' : ''}`}
+                      onClick={() => setFormData(prev => ({ ...prev, timeSlot: slot }))}
+                    >
+                      {slot}
+                    </button>
+                  ))
+                ) : (
+                  <div className="no-slots-message" style={{
+                    padding: '20px',
+                    textAlign: 'center',
+                    color: '#999',
+                    gridColumn: '1 / -1'
+                  }}>
+                    No available time slots for today. Please select a future date.
+                  </div>
+                )}
             </div>
           </div>
         </div>

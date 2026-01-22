@@ -1,0 +1,20 @@
+/* Placeholder image styles - Add these to Home.css if images are not available */
+.restaurant-image.italian {
+  background: linear-gradient(135deg, #c94b4b 0%, #4b134f 100%);
+}
+
+.restaurant-image.indian {
+  background: linear-gradient(135deg, #f46b45 0%, #eea849 100%);
+}
+
+.restaurant-image.japanese {
+  background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%);
+}
+
+.restaurant-image.american {
+  background: linear-gradient(135deg, #434343 0%, #000000 100%);
+}
+
+.restaurant-image.default {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
