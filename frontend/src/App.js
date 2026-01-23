@@ -6,6 +6,7 @@ import MainApp from './components/MainApp';
 import BookingConfirm from './components/BookingConfirm';
 import BookingCancel from './components/BookingCancel';
 
+import Callback from './components/Callback';
 import './App.css';
 
 function App() {
@@ -13,12 +14,13 @@ function App() {
     <Router>
       <Routes>
 
-        <Route path="/" element={<MainApp />} />
+        //<Route path="/" element={<MainApp />} />
         <Route path="/manager-login" element={<ManagerLogin />} />
         <Route path="/app" element={<MainApp />} />
 
         <Route path="/booking/confirm/:id" element={<BookingConfirm />} />
         <Route path="/booking/cancel/:id" element={<BookingCancel />} />
+        <Route path="/callback" element={<Callback />} />
       </Routes>
     </Router>
   );
