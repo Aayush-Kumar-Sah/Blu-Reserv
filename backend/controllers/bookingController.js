@@ -23,6 +23,22 @@ exports.getBookingById = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+exports.confirmArrivalYes = async (req, res) => {
+  await Booking.findByIdAndUpdate(req.params.id, {
+    arrivalConfirmed: true,
+    status: 'confirmed'
+  });
+  res.json({ success: true });
+};
+
+exports.confirmArrivalNo = async (req, res) => {
+  await Booking.findByIdAndUpdate(req.params.id, {
+    arrivalConfirmed: false,
+    status: 'cancelled'
+  });
+  res.json({ success: true });
+};
+
 
 // Check available seats for a time slot
 exports.checkAvailability = async (req, res) => {
@@ -67,58 +83,88 @@ exports.checkAvailability = async (req, res) => {
 // Create new booking
 exports.createBooking = async (req, res) => {
   try {
-    const { customerName, customerEmail, customerPhone, bookingDate, timeSlot, numberOfSeats, specialRequests } = req.body;
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      bookingDate,
+      timeSlot,
+      numberOfSeats,
+      specialRequests
+    } = req.body;
 
-    // Validate input
     if (!customerName || !customerEmail || !customerPhone || !bookingDate || !timeSlot || !numberOfSeats) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'All required fields must be provided' 
+      return res.status(400).json({
+        success: false,
+        message: 'All required fields must be provided'
       });
     }
 
-    const date = new Date(bookingDate);
-    date.setHours(0, 0, 0, 0);
+    // normalize date
+    // bookingDate is like: "2026-01-22"
+const baseDate = new Date(bookingDate + "T00:00:00"); // local date, not UTC
 
-    // Check availability
+const startTime = timeSlot.split('-')[0]; // "18:00"
+const [hh, mm] = startTime.split(':');
+
+// create local datetime (IST)
+const bookingDateTime = new Date(
+  baseDate.getFullYear(),
+  baseDate.getMonth(),
+  baseDate.getDate(),
+  Number(hh),
+  Number(mm),
+  0,
+  0
+);
+
+
+
+    // seat logic
     const restaurant = await Restaurant.findOne();
     const totalSeats = restaurant ? restaurant.totalSeats : 50;
 
     const existingBookings = await Booking.find({
-      bookingDate: date,
+      bookingDate: baseDate,
       timeSlot,
       status: 'confirmed'
     });
 
-    const bookedSeats = existingBookings.reduce((sum, booking) => sum + booking.numberOfSeats, 0);
+    const bookedSeats = existingBookings.reduce((sum, b) => sum + b.numberOfSeats, 0);
     const availableSeats = totalSeats - bookedSeats;
 
     if (numberOfSeats > availableSeats) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Only ${availableSeats} seats available for this time slot` 
+      return res.status(400).json({
+        success: false,
+        message: `Only ${availableSeats} seats available`
       });
     }
 
-    // Create booking
+    // create booking with bookingDateTime
     const booking = new Booking({
       customerName,
       customerEmail,
       customerPhone,
-      bookingDate: date,
+      bookingDate: baseDate,
       timeSlot,
+      bookingDateTime,  
       numberOfSeats,
-      specialRequests: specialRequests || ''
+      specialRequests: specialRequests || '',
+      reminderSent: false,
+      timeAlertSent: false,
+      arrivalConfirmed: null
     });
 
     await booking.save();
 
-    res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       message: 'Booking created successfully',
-      booking 
+      booking
     });
+
   } catch (error) {
+    console.error("Create booking error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

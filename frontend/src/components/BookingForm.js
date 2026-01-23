@@ -32,6 +32,9 @@ const BookingForm = ({ onBookingSuccess }) => {
     }
   }, [formData.timeSlot, formData.bookingDate]);
 
+  
+
+
   const fetchRestaurantInfo = async () => {
     try {
       const response = await restaurantAPI.getRestaurant();
@@ -191,6 +194,7 @@ const BookingForm = ({ onBookingSuccess }) => {
       
       if (response.data.success) {
         toast.success('Booking created successfully!');
+
         
         // Reset form
         setFormData({
@@ -341,6 +345,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                       type="button"
                       className={`premium-time-slot ${formData.timeSlot === slot ? 'selected' : ''}`}
                       onClick={() => setFormData(prev => ({ ...prev, timeSlot: slot }))}
+                      
                     >
                       {slot}
                     </button>

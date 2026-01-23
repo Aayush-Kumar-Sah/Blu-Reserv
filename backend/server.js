@@ -7,11 +7,13 @@ const connectDB = require('./config/db');
 const bookingRoutes = require('./routes/bookingRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const managerRoutes = require('./routes/managerRoutes');
-
+const slotLockRoutes = require('./routes/slotLockRoutes');
 const app = express();
 
 // Connect to MongoDB
 connectDB();
+
+require('./cron/bookingCron');
 
 // Middleware
 app.use(cors());
@@ -22,6 +24,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/manager', managerRoutes);
+
+app.use('/api/slot-lock', slotLockRoutes);
 
 // Health check
 app.get('/', (req, res) => {
