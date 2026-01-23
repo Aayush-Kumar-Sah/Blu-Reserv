@@ -1,16 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Callback = () => {
   const navigate = useNavigate();
+  const hasCalledRef = useRef(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
+    // 🔒 Prevent double execution
+    if (hasCalledRef.current) return;
+    hasCalledRef.current = true;
+
+    const code = new URLSearchParams(window.location.search).get('code');
 
     if (!code) {
-      console.error('No auth code found');
       navigate('/');
       return;
     }
@@ -20,7 +23,8 @@ const Callback = () => {
       .then(() => {
         navigate('/app');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error(err);
         navigate('/');
       });
   }, [navigate]);
