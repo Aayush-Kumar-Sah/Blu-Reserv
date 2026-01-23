@@ -10,11 +10,11 @@ const BookingConfirm = () => {
     axios.patch(`http://localhost:5555/api/bookings/${id}/arrival-yes`)
       .then(() => {
         alert("✅ Booking confirmed. See you soon!");
-        navigate('/');   // 🔥 redirect to home
+        navigate('/');   // redirect to home
       })
       .catch(() => {
-        alert("❌ Error confirming booking");
-        navigate('/');   // 🔥 redirect even on error
+        alert("Error confirming booking");
+        navigate('/');   // redirect even on error
       });
   }, [id, navigate]);
 
