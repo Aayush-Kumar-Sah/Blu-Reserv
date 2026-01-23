@@ -12,7 +12,8 @@ const BookingForm = ({ onBookingSuccess }) => {
     bookingDate: new Date(),
     timeSlot: '',
     numberOfSeats: 1,
-    specialRequests: ''
+    specialRequests: '',
+    notificationPreference: 'both'
   });
 
   const [timeSlots, setTimeSlots] = useState([]);
@@ -31,6 +32,9 @@ const BookingForm = ({ onBookingSuccess }) => {
       checkAvailability();
     }
   }, [formData.timeSlot, formData.bookingDate]);
+
+  
+
 
   const fetchRestaurantInfo = async () => {
     try {
@@ -191,6 +195,7 @@ const BookingForm = ({ onBookingSuccess }) => {
       
       if (response.data.success) {
         toast.success('Booking created successfully!');
+
         
         // Reset form
         setFormData({
@@ -341,6 +346,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                       type="button"
                       className={`premium-time-slot ${formData.timeSlot === slot ? 'selected' : ''}`}
                       onClick={() => setFormData(prev => ({ ...prev, timeSlot: slot }))}
+                      
                     >
                       {slot}
                     </button>
@@ -399,6 +405,45 @@ const BookingForm = ({ onBookingSuccess }) => {
               />
             </div>
           </div>
+          <div className="premium-section">
+  <h3 className="section-heading">Notification Preference</h3>
+
+  <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+    <label>
+      <input
+        type="radio"
+        name="notificationPreference"
+        value="sms"
+        checked={formData.notificationPreference === 'sms'}
+        onChange={handleChange}
+      />
+      SMS
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="notificationPreference"
+        value="email"
+        checked={formData.notificationPreference === 'email'}
+        onChange={handleChange}
+      />
+      Email
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="notificationPreference"
+        value="both"
+        checked={formData.notificationPreference === 'both'}
+        onChange={handleChange}
+      />
+      Both
+    </label>
+  </div>
+</div>
+
 
           <button 
             type="submit" 

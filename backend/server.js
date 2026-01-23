@@ -8,11 +8,12 @@ const authRoutes = require('./routes/authRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const managerRoutes = require('./routes/managerRoutes');
-
 const app = express();
 
 // Connect to MongoDB
 connectDB();
+
+require('./cron/bookingCron');
 
 // Middleware
 app.use(cors());
@@ -24,6 +25,10 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/manager', managerRoutes);
 app.use('/api/auth', authRoutes);
+
+const { sendReminderEmail } = require('./services/emailService');
+
+
 
 // Health check
 app.get('/', (req, res) => {
@@ -39,6 +44,8 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
+
+
 
 const PORT = process.env.PORT || 5555;
 
