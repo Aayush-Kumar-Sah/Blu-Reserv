@@ -1,26 +1,16 @@
-import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const BookingCancel = () => {
-  const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios.patch(`http://localhost:5555/api/bookings/${id}/arrival-no`)
-      .then(() => {
-        alert("Booking cancelled. Slot released.");
-      })
-      .catch(() => {
-        alert("Error cancelling booking");
-      });
-  }, [id]);
+    // redirect to website
+    navigate('/');
+  }, [navigate]);
 
-  return (
-    <div style={{ padding: 40, textAlign: 'center' }}>
-      <h2>Cancelling your booking...</h2>
-      <p>Please wait</p>
-    </div>
-  );
+  return null;
 };
 
 export default BookingCancel;

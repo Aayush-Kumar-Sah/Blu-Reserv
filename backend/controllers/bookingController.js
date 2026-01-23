@@ -24,19 +24,76 @@ exports.getBookingById = async (req, res) => {
   }
 };
 exports.confirmArrivalYes = async (req, res) => {
-  await Booking.findByIdAndUpdate(req.params.id, {
-    arrivalConfirmed: true,
-    status: 'confirmed'
-  });
-  res.json({ success: true });
+  try {
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      {
+        arrivalConfirmed: true,
+        status: 'confirmed'
+      },
+      { new: true }
+    );
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    res.json({ success: true, booking });
+
+  } catch (error) {
+    // invalid ObjectId format
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking ID'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 exports.confirmArrivalNo = async (req, res) => {
-  await Booking.findByIdAndUpdate(req.params.id, {
-    arrivalConfirmed: false,
-    status: 'cancelled'
-  });
-  res.json({ success: true });
+  try {
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      {
+        arrivalConfirmed: false,
+        status: 'cancelled'
+      },
+      { new: true }
+    );
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    res.json({ success: true, booking });
+
+  } catch (error) {
+    // invalid ObjectId format
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking ID'
+      });
+    }
+
+    // other server errors
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 
@@ -100,14 +157,24 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-    // normalize date
-    // bookingDate is like: "2026-01-22"
+   //  validate timeSlot format: "HH:MM-HH:MM" (24-hour format)
+const timeSlotPattern = /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/;
+
+if (!timeSlotPattern.test(timeSlot)) {
+  return res.status(400).json({
+    success: false,
+    message: 'Invalid timeSlot format. Expected HH:MM-HH:MM'
+  });
+}
+
+// normalize date
+// bookingDate is like: "2026-01-22"
 const baseDate = new Date(bookingDate + "T00:00:00"); // local date, not UTC
 
 const startTime = timeSlot.split('-')[0]; // "18:00"
 const [hh, mm] = startTime.split(':');
 
-// create local datetime (IST)
+// create local datetime
 const bookingDateTime = new Date(
   baseDate.getFullYear(),
   baseDate.getMonth(),

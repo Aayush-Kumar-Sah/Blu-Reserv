@@ -31,7 +31,7 @@ const bookingSchema = new mongoose.Schema({
     // Format: "HH:MM-HH:MM"
   },
 
-  // ⭐ exact start datetime for automation
+  // exact start datetime for automation
   bookingDateTime: {
     type: Date,
     required: true
@@ -50,7 +50,7 @@ const bookingSchema = new mongoose.Schema({
     default: 'confirmed'
   },
 
-  // ⭐ automation flags
+  // automation flags
   reminderSent: {
     type: Boolean,
     default: false
@@ -65,6 +65,11 @@ const bookingSchema = new mongoose.Schema({
     type: Boolean,
     default: null
   },
+  notificationPreference: {
+  type: String,
+  enum: ['sms', 'email', 'both'],
+  default: 'both'
+},
 
   specialRequests: {
     type: String,

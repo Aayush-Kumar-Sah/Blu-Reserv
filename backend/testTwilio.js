@@ -9,7 +9,7 @@ const client = twilio(
 client.messages.create({
   body: '✅ Test message from Blu-Reserv system!',
   from: process.env.TWILIO_PHONE_NUMBER,
-  to: '+919538501947'   // your verified phone number
+  to: process.env.TWILIO_TEST_RECIPIENT_PHONE
 })
 .then(msg => console.log('Message sent:', msg.sid))
 .catch(err => console.error('Twilio error:', err));

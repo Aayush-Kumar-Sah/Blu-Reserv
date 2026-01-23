@@ -24,6 +24,8 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/manager', managerRoutes);
 
+const { sendReminderEmail } = require('./services/emailService');
+
 
 
 // Health check
@@ -40,6 +42,8 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
+
+
 
 const PORT = process.env.PORT || 5555;
 

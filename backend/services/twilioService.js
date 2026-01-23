@@ -1,30 +1,17 @@
-/*const twilio = require('twilio');
-
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-
-const sendSMS = async (to, message) => {
-  try {
-    await client.messages.create({
-      body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: booking.customerPhone.startsWith('+')
-  ? booking.customerPhone
-  : `+91${booking.customerPhone}`,
-
-    });
-    console.log('📩 SMS sent to', to);
-  } catch (err) {
-    console.error('❌ SMS error:', err.message);
-  }
-};
-
-module.exports = { sendSMS };
-*/
-
 const twilio = require('twilio');
+
+const REQUIRED_ENV = [
+  'TWILIO_ACCOUNT_SID',
+  'TWILIO_AUTH_TOKEN',
+  'TWILIO_PHONE_NUMBER',
+  'FRONTEND_URL'
+];
+
+REQUIRED_ENV.forEach((key) => {
+  if (!process.env[key]) {
+    console.error(`Missing required env variable: ${key}`);
+  }
+});
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -32,44 +19,68 @@ const client = twilio(
 );
 
 function formatPhone(phone) {
+  if (!phone) return phone;
   if (phone.startsWith('+')) return phone;
-  return `+91${phone}`;
+
+  const rawCountryCode = process.env.SMS_DEFAULT_COUNTRY_CODE || '+91';
+
+  const normalizedCountryCode = rawCountryCode.startsWith('+')
+    ? rawCountryCode
+    : `+${rawCountryCode}`;
+
+  return `${normalizedCountryCode}${phone}`;
 }
 
-// 📩 Reminder SMS
+// Reminder SMS
 async function sendReminderSMS(booking) {
-  const phone = formatPhone(booking.customerPhone);
+  try {
+    const phone = formatPhone(booking.customerPhone);
 
-  const yesLink = `${process.env.FRONTEND_URL}/booking/confirm/${booking._id}`;
-  const noLink  = `${process.env.FRONTEND_URL}/booking/cancel/${booking._id}`;
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-  const msg = `Are you cominggg?\n\nYES: ${yesLink}\nNO: ${noLink}`;
+    const yesLink = `${FRONTEND_URL}/booking/confirm/${booking._id}`;
+    const noLink  = `${FRONTEND_URL}/booking/cancel/${booking._id}`;
 
-  const res = await client.messages.create({
-    body: msg,
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to: phone
-  });
+    const msg = `Are you coming?\n\nYES: ${yesLink}\nNO: ${noLink}`;
 
-  console.log("📩 Reminder SMS sent:", res.sid);
+    const res = await client.messages.create({
+      body: msg,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phone
+    });
+
+    console.log("📩 Reminder SMS sent:", res.sid);
+    return true;   // success
+
+  } catch (error) {
+    console.error(" Reminder SMS failed:", error.message);
+    return false;  //  failed
+  }
 }
 
-// ⏰ Time alert SMS
+
+// Time alert SMS
 async function sendTimeAlertSMS(booking) {
-  const phone = formatPhone(booking.customerPhone);
+  try {
+    const phone = formatPhone(booking.customerPhone);
 
-  const msg = `Its timeee.\nPlease reach the restaurant.`;
+    const msg = `It's time.\nPlease reach the restaurant.`;
 
-  const res = await client.messages.create({
-    body: msg,
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to: phone
-  });
+    const res = await client.messages.create({
+      body: msg,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phone
+    });
 
-  console.log("📩 Time alert SMS sent:", res.sid);
+    console.log("📩 Time alert SMS sent:", res.sid);
+    return true;   // success
+
+  } catch (error) {
+    console.error("Time alert SMS failed:", error.message);
+    return false;  //  failed
+  }
 }
 
-// ✅ EXPORTS
 module.exports = {
   sendReminderSMS,
   sendTimeAlertSMS

@@ -1,29 +1,16 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const BookingConfirm = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.patch(`http://localhost:5555/api/bookings/${id}/arrival-yes`)
-      .then(() => {
-        alert("✅ Booking confirmed. See you soon!");
-        navigate('/');   // redirect to home
-      })
-      .catch(() => {
-        alert("Error confirming booking");
-        navigate('/');   // redirect even on error
-      });
-  }, [id, navigate]);
+    // redirect to website
+    navigate('/');
+  }, [navigate]);
 
-  return (
-    <div style={{ padding: 40, textAlign: 'center' }}>
-      <h2>Confirming your booking...</h2>
-      <p>Please wait</p>
-    </div>
-  );
+  return null;
 };
 
 export default BookingConfirm;
