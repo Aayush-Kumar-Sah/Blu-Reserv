@@ -6,9 +6,15 @@ const LandingPage = () => {
     const navigate = useNavigate();
 
     const handleIBMAuth = () => {
-        console.log('SSO started');
-        // Placeholder for SSO logic
-        alert('IBM SSO Auth integration to be implemented');
+        const authUrl =
+            'https://test.login.w3.ibm.com/v1.0/endpoint/default/authorize' +
+            `?response_type=code` +
+            `&client_id=ODcxNDlkMDEtN2E1OS00` +
+            `&redirect_uri=${encodeURIComponent('http://localhost:3000/callback')}` +
+            `&scope=${encodeURIComponent('openid profile email')}` +
+            `&prompt=login`;
+
+        window.location.href = authUrl;
     };
 
     return (
