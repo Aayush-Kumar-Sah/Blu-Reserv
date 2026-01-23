@@ -23,7 +23,7 @@
     "mongoose": "^8.0.3",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.12",
-    "twilio": "^5.11.2"
+    "twilio": "^5.11.2",
     "axios": "^1.13.2",
     "jsonwebtoken": "^9.0.3"
   },
