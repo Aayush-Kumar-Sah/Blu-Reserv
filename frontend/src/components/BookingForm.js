@@ -4,6 +4,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { bookingAPI, restaurantAPI } from '../services/api';
 import { toast } from 'react-toastify';
 
+import eatIcon from "../assets/eating.png";
+
 const BookingForm = ({ onBookingSuccess }) => {
   const [formData, setFormData] = useState({
     customerName: '',
@@ -231,7 +233,13 @@ const BookingForm = ({ onBookingSuccess }) => {
     <div className="premium-booking-container fade-in">
       <div className="premium-form-card">
         <div className="premium-header">
-          <div className="restaurant-logo">logo idhar</div>
+          <div className="restaurant-logo">
+            <img
+              src={eatIcon}
+              alt="Restaurant logo"
+              className="restaurant-logo-icon"
+            />
+          </div>
           <h1 className="premium-title">Reserve Your Seats</h1>
           <p className="premium-subtitle">Experience fine dining at its best</p>
         </div>
