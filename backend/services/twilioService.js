@@ -80,8 +80,37 @@ async function sendTimeAlertSMS(booking) {
     return false;  //  failed
   }
 }
+// Booking confirmation SMS
+async function sendBookingConfirmationSMS(booking) {
+  try {
+    const phone = formatPhone(booking.customerPhone);
+
+    const msg = `✅ Booking Confirmed!
+
+Name: ${booking.customerName}
+Date: ${booking.bookingDate.toDateString()}
+Time: ${booking.timeSlot}
+Seats: ${booking.numberOfSeats}
+
+– Blu-Reserv`;
+
+    const res = await client.messages.create({
+      body: msg,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phone
+    });
+
+    console.log("📩 Booking confirmation SMS sent:", res.sid);
+    return true;
+  } catch (err) {
+    console.error("❌ Booking confirmation SMS failed:", err.message);
+    return false;
+  }
+}
+
 
 module.exports = {
   sendReminderSMS,
-  sendTimeAlertSMS
+  sendTimeAlertSMS,
+  sendBookingConfirmationSMS  
 };

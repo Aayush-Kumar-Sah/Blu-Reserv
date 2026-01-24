@@ -106,9 +106,36 @@ const sendCancelEmail = async (booking) => {
     return false;
   }
 };
+const sendBookingConfirmationEmail = async (booking) => {
+  try {
+    const mailOptions = {
+      from: `"Blu-Reserv" <${process.env.EMAIL_USER}>`,
+      to: booking.customerEmail,
+      subject: "✅ Booking Confirmed",
+      html: `
+        <h2>Hello ${booking.customerName} 👋</h2>
+        <p>Your booking has been successfully confirmed.</p>
+        <p><b>Date:</b> ${new Date(booking.bookingDate).toDateString()}</p>
+        <p><b>Time Slot:</b> ${booking.timeSlot}</p>
+        <p><b>Seats:</b> ${booking.numberOfSeats}</p>
+        <br/>
+        <p>Thank you for choosing Blu-Reserv 💙</p>
+        <p>– Blu-Reserv Team</p>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("📧 Booking confirmation email sent");
+    return true;
+  } catch (err) {
+    console.error("❌ Booking confirmation email failed:", err.message);
+    return false;
+  }
+};
 
 module.exports = {
   sendReminderEmail,
   sendTimeAlertEmail,
-  sendCancelEmail
+  sendCancelEmail,
+  sendBookingConfirmationEmail 
 };
