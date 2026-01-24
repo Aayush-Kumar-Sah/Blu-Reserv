@@ -1036,6 +1036,12 @@ body {
   }
 }
 
+.restaurant-logo-icon {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
 .premium-title {
   font-size: 2.5rem;
   font-weight: 700;
