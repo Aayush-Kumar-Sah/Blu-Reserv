@@ -13,16 +13,17 @@ function MainApp() {
     const [activeView, setActiveView] = useState('form');
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
+    const manager = JSON.parse(localStorage.getItem('manager'));
 
-    // 🔒 Protect route
     useEffect(() => {
-        if (!user) {
-            navigate('/');
-        }
-    }, [user, navigate]);
+    if (!user && !manager) {
+        navigate('/');
+    }
+    }, [user, manager, navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('manager');
         navigate('/');
     };
     
@@ -33,11 +34,12 @@ function MainApp() {
                     <h1>Restaurant Seat Booking</h1>
 
                     <div className="header-user">
-                        <span>Hi, {user?.firstName}</span>
+                        {user && <span>Hi, {user.firstName}</span>}
+                        {manager && <span>Manager</span>}
                         <button className="logout-btn" onClick={handleLogout}>
                             Logout
                         </button>
-                    </div>
+                    </div>  
                 </div>
 
                 <p>Book your seats for an amazing dining experience</p>
