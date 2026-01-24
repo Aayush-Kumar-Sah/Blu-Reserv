@@ -5,14 +5,43 @@ import BookingList from './BookingList';
 import BookingCalendar from './BookingCalendar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 function MainApp() {
     const [activeView, setActiveView] = useState('form');
+    const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user'));
+    const manager = JSON.parse(localStorage.getItem('manager'));
 
+    useEffect(() => {
+    if (!user && !manager) {
+        navigate('/');
+    }
+    }, [user, manager, navigate]);
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('manager');
+        navigate('/');
+    };
+    
     return (
         <div className="App">
             <div className="header">
-                <h1>Restaurant Seat Booking</h1>
+                <div className="header-top">
+                    <h1>Restaurant Seat Booking</h1>
+
+                    <div className="header-user">
+                        {user && <span>Hi, {user.firstName}</span>}
+                        {manager && <span>Manager</span>}
+                        <button className="logout-btn" onClick={handleLogout}>
+                            Logout
+                        </button>
+                    </div>  
+                </div>
+
                 <p>Book your seats for an amazing dining experience</p>
             </div>
 

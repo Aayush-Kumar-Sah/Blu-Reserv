@@ -20,7 +20,8 @@ const Callback = () => {
 
     axios
       .post('http://localhost:5555/api/auth/callback', { code })
-      .then(() => {
+      .then((res) => {
+        localStorage.setItem('user', JSON.stringify(res.data.user));
         navigate('/app');
       })
       .catch((err) => {

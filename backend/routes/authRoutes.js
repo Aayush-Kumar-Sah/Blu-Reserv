@@ -34,14 +34,34 @@ router.post('/callback', async (req, res) => {
 
     console.log('IBM User:', decoded.emailAddress);
 
+    const User = require('../models/User');
+
+    // Save or update user
+    const user = await User.findOneAndUpdate(
+      { email: decoded.email || decoded.emailAddress },
+      {
+        $set: {
+    let user;
+    try {
+      user = await User.findOneAndUpdate(
+        { email: decoded.email || decoded.emailAddress },
+        {
+          email: decoded.email || decoded.emailAddress,
+          firstName: decoded.given_name || decoded.firstName,
+          lastName: decoded.family_name || decoded.lastName,
+          employeeId: decoded.employee_id || decoded.uid,
+          role: 'user',
+        },
+        { upsert: true, new: true }
+      );
+    } catch (dbErr) {
+      console.error('Database error during User.findOneAndUpdate in /callback:', dbErr);
+      throw dbErr;
+    }
+
     res.json({
       success: true,
-      user: {
-        email: decoded.emailAddress,
-        firstName: decoded.firstName,
-        lastName: decoded.lastName,
-        employeeId: decoded.uid,
-      },
+      user: user,
     });
   } catch (err) {
     console.error(err.response?.data || err.message);
