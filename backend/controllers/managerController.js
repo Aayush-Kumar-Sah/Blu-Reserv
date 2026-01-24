@@ -1,4 +1,5 @@
 const Manager = require('../models/Manager');
+const bcrypt = require('bcrypt');
 
 // Manager Login
 exports.login = async (req, res) => {
@@ -22,8 +23,10 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Check password (direct comparison for now as requested)
-        if (manager.password !== password) {
+        // 🔒 Compare hashed password
+        const isMatch = await bcrypt.compare(password, manager.passwordHash);
+
+        if (!isMatch) {
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
@@ -36,10 +39,16 @@ exports.login = async (req, res) => {
             message: 'Login successful',
             manager: {
                 id: manager._id,
-                username: manager.username
+                username: manager.username,
+                role: 'manager'
             }
         });
+
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
     }
 };

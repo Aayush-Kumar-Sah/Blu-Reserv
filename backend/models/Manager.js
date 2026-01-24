@@ -7,7 +7,7 @@ const managerSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
-    password: {
+    passwordHash: {
         type: String, // In a real app, this should be hashed
         required: true
     }
