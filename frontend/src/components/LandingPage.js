@@ -17,6 +17,21 @@ const LandingPage = () => {
         window.location.href = authUrl;
     };
 
+    const handleDemoLogin = () => {
+        const demoUser = {
+            firstName: 'Demo',
+            lastName: 'User',
+            email: 'demo@local',
+            role: 'demo'
+        };
+
+        localStorage.removeItem('user');
+        localStorage.removeItem('manager');
+        localStorage.setItem('demoUser', JSON.stringify(demoUser));
+        navigate('/app');
+    };
+
+
     return (
         <div className="landing-container">
             <div className="landing-content">
@@ -34,6 +49,14 @@ const LandingPage = () => {
                         onClick={() => navigate('/manager-login')}
                     >
                         Login as Manager
+                    </button>
+
+                    <button
+                        className="start-button"
+                        style={{ background: 'transparent', border: '2px solid white' }}
+                        onClick={handleDemoLogin}
+                    >
+                        Login as Demo User
                     </button>
                 </div>
             </div>

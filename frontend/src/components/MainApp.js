@@ -14,16 +14,18 @@ function MainApp() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
     const manager = JSON.parse(localStorage.getItem('manager'));
+    const demoUser = JSON.parse(localStorage.getItem('demoUser'));
 
     useEffect(() => {
-    if (!user && !manager) {
+    if (!user && !manager && !demoUser) {
         navigate('/');
     }
-    }, [user, manager, navigate]);
+    }, [user, manager, demoUser, navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('manager');
+        localStorage.removeItem('demoUser');
         navigate('/');
     };
     
@@ -34,12 +36,16 @@ function MainApp() {
                     <h1>Restaurant Seat Booking</h1>
 
                     <div className="header-user">
-                        {user && <span>Hi, {user.firstName}</span>}
                         {manager && <span>Manager</span>}
+                        {!manager && demoUser && <span>Hi, Demo</span>}
+                        {!manager && !demoUser && user && (
+                            <span>Hi, {user.firstName}</span>
+                        )}
                         <button className="logout-btn" onClick={handleLogout}>
                             Logout
                         </button>
-                    </div>  
+                    </div>
+
                 </div>
 
                 <p>Book your seats for an amazing dining experience</p>

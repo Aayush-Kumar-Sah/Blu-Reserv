@@ -24,8 +24,11 @@ const ManagerLogin = () => {
         try {
             await managerAPI.login(formData);
             toast.success('Login successful');
+            
+            localStorage.removeItem('user');
+            localStorage.removeItem('demoUser');
+            // set manager
             localStorage.setItem('manager', JSON.stringify({ role: 'manager' }));
-            // Store token or auth state if needed. For now, just navigate.
             navigate('/app');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Login failed');

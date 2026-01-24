@@ -21,8 +21,11 @@ const Callback = () => {
     axios
       .post('http://localhost:5555/api/auth/callback', { code })
       .then((res) => {
+        localStorage.removeItem('manager');
+        localStorage.removeItem('demoUser');
         localStorage.setItem('user', JSON.stringify(res.data.user));
         navigate('/app');
+
       })
       .catch((err) => {
         console.error(err);
