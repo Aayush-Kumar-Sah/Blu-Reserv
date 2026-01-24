@@ -34,6 +34,9 @@ const BookingForm = ({ onBookingSuccess }) => {
   }, [formData.timeSlot, formData.bookingDate]);
 
   
+  useEffect(() => {
+  console.log("PREFERENCE STATE:", formData.notificationPreference);
+}, [formData.notificationPreference]);
 
 
   const fetchRestaurantInfo = async () => {
@@ -190,6 +193,8 @@ const BookingForm = ({ onBookingSuccess }) => {
         ...formData,
         bookingDate: formData.bookingDate.toISOString().split('T')[0]
       };
+      console.log("SUBMIT DATA:", bookingData);
+
 
       const response = await bookingAPI.createBooking(bookingData);
       

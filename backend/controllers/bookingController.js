@@ -147,7 +147,8 @@ exports.createBooking = async (req, res) => {
       bookingDate,
       timeSlot,
       numberOfSeats,
-      specialRequests
+      specialRequests,
+      notificationPreference 
     } = req.body;
 
     if (!customerName || !customerEmail || !customerPhone || !bookingDate || !timeSlot || !numberOfSeats) {
@@ -219,7 +220,8 @@ const bookingDateTime = new Date(
       specialRequests: specialRequests || '',
       reminderSent: false,
       timeAlertSent: false,
-      arrivalConfirmed: null
+      arrivalConfirmed: null,
+      notificationPreference: notificationPreference 
     });
 
     await booking.save();
