@@ -1,5 +1,8 @@
 const Booking = require('../models/Booking');
 const Restaurant = require('../models/Restaurant');
+const { sendBookingConfirmationSMS } = require('../services/twilioService');
+const { sendBookingConfirmationEmail } = require('../services/emailService');
+
 
 // Get all bookings
 exports.getAllBookings = async (req, res) => {
@@ -224,13 +227,29 @@ const bookingDateTime = new Date(
       notificationPreference: notificationPreference 
     });
 
-    await booking.save();
+   await booking.save();
 
-    res.status(201).json({
-      success: true,
-      message: 'Booking created successfully',
-      booking
-    });
+// 🔔 Instant confirmation notifications
+let sent = false;
+
+if (booking.notificationPreference === 'sms' || booking.notificationPreference === 'both') {
+  const smsOk = await sendBookingConfirmationSMS(booking);
+  sent = sent || smsOk;
+}
+
+if (booking.notificationPreference === 'email' || booking.notificationPreference === 'both') {
+  const emailOk = await sendBookingConfirmationEmail(booking);
+  sent = sent || emailOk;
+}
+
+console.log("📨 Booking confirmation sent:", sent);
+
+res.status(201).json({
+  success: true,
+  message: 'Booking created successfully',
+  booking
+});
+
 
   } catch (error) {
     console.error("Create booking error:", error);
