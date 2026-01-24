@@ -40,14 +40,24 @@ router.post('/callback', async (req, res) => {
     const user = await User.findOneAndUpdate(
       { email: decoded.email || decoded.emailAddress },
       {
-        email: decoded.email || decoded.emailAddress,
-        firstName: decoded.given_name || decoded.firstName,
-        lastName: decoded.family_name || decoded.lastName,
-        employeeId: decoded.employee_id || decoded.uid,
-        role: 'user',
-      },
-      { upsert: true, new: true }
-    );
+        $set: {
+    let user;
+    try {
+      user = await User.findOneAndUpdate(
+        { email: decoded.email || decoded.emailAddress },
+        {
+          email: decoded.email || decoded.emailAddress,
+          firstName: decoded.given_name || decoded.firstName,
+          lastName: decoded.family_name || decoded.lastName,
+          employeeId: decoded.employee_id || decoded.uid,
+          role: 'user',
+        },
+        { upsert: true, new: true }
+      );
+    } catch (dbErr) {
+      console.error('Database error during User.findOneAndUpdate in /callback:', dbErr);
+      throw dbErr;
+    }
 
     res.json({
       success: true,
