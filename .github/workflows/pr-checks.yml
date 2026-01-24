@@ -1,0 +1,111 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: PR title check
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          if [[ -z "$PR_TITLE" ]]; then
+            echo "PR title cannot be empty"
+            exit 1
+          fi
+          echo "PR title: $PR_TITLE"
+      
+      - name: Check PR description
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          if [[ -z "$PR_BODY" ]]; then
+            echo "Warning: PR description is empty. Please add a description."
+          else
+            echo "PR has a description"
+          fi
+        continue-on-error: true
+      
+      - name: Check branch name
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          echo "Branch name: $BRANCH_NAME"
+          
+          if [[ "$BRANCH_NAME" =~ ^(feature|bugfix|hotfix|refactor|test)/.+ ]]; then
+            echo "✓ Branch name follows convention"
+          else
+            echo "⚠ Branch name should follow: feature/*, bugfix/*, hotfix/*, refactor/*, test/*"
+          fi
+        continue-on-error: true
+
+  changed-files:
+    name: Analyze Changed Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+      
+      - name: List changed files
+        run: |
+          echo "Changed files:"
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "  - $file"
+          done
+      
+      - name: Check for package.json changes
+        if: contains(steps.changed-files.outputs.all_changed_files, 'package.json')
+        run: |
+          echo "⚠ package.json was modified. Please ensure package-lock.json is also updated."
+      
+      - name: Check for sensitive files
+        run: |
+          SENSITIVE_PATTERNS=".env .env.local .env.production secrets.yml credentials.json"
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            for pattern in $SENSITIVE_PATTERNS; do
+              if [[ "$file" == *"$pattern"* ]]; then
+                echo "❌ ERROR: Potential sensitive file detected: $file"
+                exit 1
+              fi
+            done
+          done
+          echo "✓ No sensitive files detected"
+
+  size-check:
+    name: PR Size Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check PR size
+        run: |
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          LINES_CHANGED=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | awk '{print $4+$6}')
+          
+          echo "Files changed: $FILES_CHANGED"
+          echo "Lines changed: $LINES_CHANGED"
+          
+          if [ "$FILES_CHANGED" -gt 50 ]; then
+            echo "⚠ Warning: This PR changes $FILES_CHANGED files. Consider breaking it into smaller PRs."
+          fi
+          
+          if [ "$LINES_CHANGED" -gt 500 ]; then
+            echo "⚠ Warning: This PR changes $LINES_CHANGED lines. Consider breaking it into smaller PRs."
+          fi
+        continue-on-error: true
