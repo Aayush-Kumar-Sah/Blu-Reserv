@@ -44,6 +44,11 @@ const bookingSchema = new mongoose.Schema({
     max: 20
   },
 
+  selectedSeats: {
+    type: [String], // Array of strings like ["1-T1-S1", "1-T1-S2"]
+    default: []
+  },
+
   status: {
     type: String,
     enum: ['confirmed', 'cancelled', 'completed'],

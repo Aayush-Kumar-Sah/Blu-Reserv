@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { bookingAPI } from '../services/api'; 
 import './SeatBooking.css';
 
 // Floor 1 & 2: 6 tables of 4, 2 tables of 8 (40 seats)
 const FLOOR_1_2_LAYOUT = [
-  // Left Column (4-seaters)
   { id: 'T1', x: 20, y: 20, seats: 4, type: 'rect-4', label: 'T1' },
   { id: 'T2', x: 20, y: 50, seats: 4, type: 'rect-4', label: 'T2' },
   { id: 'T3', x: 20, y: 80, seats: 4, type: 'rect-4', label: 'T3' },
-  
-  // Middle Column (8-seaters)
   { id: 'T4', x: 50, y: 30, seats: 8, type: 'rect-8', label: 'Big T4' },
   { id: 'T5', x: 50, y: 70, seats: 8, type: 'rect-8', label: 'Big T5' },
-
-  // Right Column (4-seaters)
   { id: 'T6', x: 80, y: 20, seats: 4, type: 'rect-4', label: 'T6' },
   { id: 'T7', x: 80, y: 50, seats: 4, type: 'rect-4', label: 'T7' },
   { id: 'T8', x: 80, y: 80, seats: 4, type: 'rect-4', label: 'T8' },
@@ -28,46 +24,117 @@ const FLOOR_3_LAYOUT = [
   { id: 'T5', x: 70, y: 80, seats: 4, type: 'rect-4', label: 'T5' },
 ];
 
-const SeatBooking = ({ onBookingSuccess }) => {
+const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) => {
   const [activeFloor, setActiveFloor] = useState(1);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [occupiedSeats, setOccupiedSeats] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Get layout based on active floor
   const currentLayout = activeFloor === 3 ? FLOOR_3_LAYOUT : FLOOR_1_2_LAYOUT;
 
   useEffect(() => {
-    setSelectedSeats([]);
-    // Mock occupied seats
-    const mockOccupied = [`T3-S2`, `T3-S3`, `T1-S1`]; 
-    setOccupiedSeats(mockOccupied);
-  }, [activeFloor]);
+    fetchOccupiedSeats();
+    // eslint-disable-next-line
+  }, [bookingDate, timeSlot]);
+
+  const fetchOccupiedSeats = async () => {
+    setLoading(true);
+    try {
+      const dateStr = bookingDate.toISOString().split('T')[0];
+      
+      // CALL BACKEND API
+      const response = await bookingAPI.getOccupiedSeats(dateStr, timeSlot);
+      if(response.data.success) {
+          setOccupiedSeats(response.data.occupiedSeats);
+      }
+    } catch (error) {
+      console.error("Failed to fetch seat status", error);
+      toast.error("Could not refresh seat availability");
+    } finally {
+        setLoading(false);
+    }
+  };
 
   const handleSeatClick = (tableId, seatIndex) => {
-    const seatId = `${tableId}-S${seatIndex + 1}`;
+    // UPDATED ID FORMAT: Floor-Table-Seat (e.g., 1-T2-S1)
+    const seatId = `${activeFloor}-${tableId}-S${seatIndex + 1}`;
+    
     if (occupiedSeats.includes(seatId)) return;
 
     if (selectedSeats.includes(seatId)) {
       setSelectedSeats(prev => prev.filter(id => id !== seatId));
     } else {
+      if (selectedSeats.length >= partySize) {
+        toast.warning(`You can only select ${partySize} seats for your party size.`);
+        return;
+      }
       setSelectedSeats(prev => [...prev, seatId]);
     }
   };
 
-  const handleConfirm = () => {
-    if(selectedSeats.length === 0) return;
-    toast.success(`Booked ${selectedSeats.length} seats on Floor ${activeFloor}!`);
-    if(onBookingSuccess) onBookingSuccess();
+  const handleConfirmSelection = () => {
+    if(selectedSeats.length !== partySize) {
+        toast.warn(`Please select exactly ${partySize} seats.`);
+        return;
+    }
+    onConfirm(selectedSeats);
+  };
+
+    const RectangularTable = ({ tableConfig, selectedSeats, occupiedSeats, onSeatClick }) => {
+        const { id, x, y, seats, label } = tableConfig;
+        const isLarge = seats === 8;
+        const tableWidth = isLarge ? 160 : 80;
+        const tableHeight = 60; 
+
+        const renderSeatRow = (startIndex, count, position) => {
+            return (
+                <div className={`seat-row ${position}`}>
+                    {Array.from({ length: count }).map((_, i) => {
+                        const seatIndex = startIndex + i;
+                        
+                        // RECONSTRUCT ID to check against array
+                        const seatId = `${activeFloor}-${id}-S${seatIndex + 1}`;
+                        
+                        const isSelected = selectedSeats.includes(seatId);
+                        const isOccupied = occupiedSeats.includes(seatId);
+                        
+                        return (
+                            <div 
+                                key={seatIndex}
+                                className={`seat-chair ${isSelected ? 'selected' : ''} ${isOccupied ? 'occupied' : ''}`}
+                                onClick={() => onSeatClick(id, seatIndex)}
+                                title={isOccupied ? "Occupied" : `Seat ${seatIndex+1}`}
+                            >
+                                {seatIndex + 1}
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+        };
+        
+         return (
+            <div className="table-group" style={{ left: `${x}%`, top: `${y}%` }}>
+                {renderSeatRow(0, seats / 2, 'top')}
+                <div className="table-surface" style={{ width: `${tableWidth}px`, height: `${tableHeight}px` }}>{label}</div>
+                {renderSeatRow(seats / 2, seats / 2, 'bottom')}
+            </div>
+         );
   };
 
   return (
     <div className="seat-booking-wrapper">
-      <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Select Seats</h2>
-      <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
-        Click on the chairs to select them
-      </p>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto 20px'}}>
+        <button onClick={onBack} className="btn-secondary" style={{padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'}}>
+            ← Back to Form
+        </button>
+        <div style={{textAlign: 'center'}}>
+            <h2 style={{margin: 0}}>Select {partySize} Seats</h2>
+            <div style={{fontSize: '0.9rem', color:'#666'}}>{bookingDate.toDateString()} | {timeSlot}</div>
+        </div>
+        <div style={{width: '90px'}}></div> {/* Spacer for alignment */}
+      </div>
 
-      {/* Floor Tabs */}
       <div className="floor-selector">
         {[1, 2, 3].map(floor => (
           <button
@@ -82,6 +149,8 @@ const SeatBooking = ({ onBookingSuccess }) => {
 
       <div className="cafeteria-layout">
         <div className="entrance-label">ENTRANCE</div>
+        {loading && <div style={{position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', zIndex:10}}>Loading seats...</div>}
+        
         {currentLayout.map((table) => (
           <RectangularTable 
             key={table.id}
@@ -93,82 +162,26 @@ const SeatBooking = ({ onBookingSuccess }) => {
         ))}
       </div>
 
-      {/* Footer */}
-      {selectedSeats.length > 0 && (
-        <div className="booking-actions">
-          <div>
-            <div style={{fontSize: '0.9rem', color: '#666'}}>Total Price</div>
-            <div style={{fontSize: '1.5rem', fontWeight: 'bold'}}>
-              Free
-              <span style={{fontSize: '0.8rem', fontWeight: 'normal'}}> ({selectedSeats.length} seats)</span>
-            </div>
+      <div className="booking-actions">
+        <div>
+          <div style={{fontSize: '0.9rem', color: '#666'}}>Selected</div>
+          <div style={{fontSize: '1.2rem', fontWeight: 'bold'}}>
+             {selectedSeats.length} / {partySize} Seats
           </div>
-          <button className="action-btn" onClick={handleConfirm}>
-            Confirm Reservation
-          </button>
         </div>
-      )}
+        <button 
+            className="action-btn" 
+            onClick={handleConfirmSelection}
+            disabled={selectedSeats.length !== partySize}
+            style={{opacity: selectedSeats.length !== partySize ? 0.5 : 1}}
+        >
+          Confirm Selection
+        </button>
+      </div>
     </div>
   );
 };
 
-const RectangularTable = ({ tableConfig, selectedSeats, occupiedSeats, onSeatClick }) => {
-    const { id, x, y, seats, label, type } = tableConfig;
-    
-    // Determine dimensions based on seat count
-    // 4-seater: 2 top, 2 bottom
-    // 8-seater: 4 top, 4 bottom
-    const isLarge = seats === 8;
-    const tableWidth = isLarge ? 160 : 80;
-    const tableHeight = 60; 
 
-    // Helper to render a row of seats
-    const renderSeatRow = (startIndex, count, position) => {
-        return (
-            <div className={`seat-row ${position}`}>
-                {Array.from({ length: count }).map((_, i) => {
-                    const seatIndex = startIndex + i;
-                    const seatId = `${id}-S${seatIndex + 1}`;
-                    const isSelected = selectedSeats.includes(seatId);
-                    const isOccupied = occupiedSeats.includes(seatId);
-                    
-                    return (
-                        <div 
-                            key={seatIndex}
-                            className={`seat-chair ${isSelected ? 'selected' : ''} ${isOccupied ? 'occupied' : ''}`}
-                            onClick={() => onSeatClick(id, seatIndex)}
-                        >
-                            {seatIndex + 1}
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    return (
-      <div 
-        className="table-group"
-        style={{
-          left: `${x}%`,
-          top: `${y}%`,
-        }}
-      >
-        {/* Top Row Seats */}
-        {renderSeatRow(0, seats / 2, 'top')}
-
-        {/* The Table Surface */}
-        <div 
-            className="table-surface" 
-            style={{ width: `${tableWidth}px`, height: `${tableHeight}px` }}
-        >
-          {label}
-        </div>
-
-        {/* Bottom Row Seats */}
-        {renderSeatRow(seats / 2, seats / 2, 'bottom')}
-      </div>
-    );
-};
 
 export default SeatBooking;

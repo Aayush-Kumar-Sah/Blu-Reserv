@@ -147,6 +147,7 @@ exports.createBooking = async (req, res) => {
       bookingDate,
       timeSlot,
       numberOfSeats,
+      selectedSeats,
       specialRequests,
       notificationPreference 
     } = req.body;
@@ -186,6 +187,26 @@ const bookingDateTime = new Date(
   0
 );
 
+// 1. CHECK SPECIFIC SEAT AVAILABILITY
+    if (selectedSeats && selectedSeats.length > 0) {
+      // Find any confirmed booking that has ANY of the requested seats
+      const conflictingBooking = await Booking.findOne({
+        bookingDate: baseDate,
+        timeSlot,
+        status: 'confirmed',
+        selectedSeats: { $in: selectedSeats } // MongoDB magic: checks if any element in array matches
+      });
+
+      if (conflictingBooking) {
+        // Find which specific seats matched to give better error message
+        const taken = selectedSeats.filter(s => conflictingBooking.selectedSeats.includes(s));
+        return res.status(400).json({
+          success: false,
+          message: `The following seats are already booked: ${taken.join(', ')}. Please select different seats.`
+        });
+      }
+    }
+
 
 
     // seat logic
@@ -217,6 +238,7 @@ const bookingDateTime = new Date(
       timeSlot,
       bookingDateTime,  
       numberOfSeats,
+      selectedSeats: selectedSeats || [],
       specialRequests: specialRequests || '',
       reminderSent: false,
       timeAlertSent: false,
@@ -344,6 +366,34 @@ exports.getBookingsByDate = async (req, res) => {
     }).sort({ timeSlot: 1 });
 
     res.json({ success: true, bookings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getOccupiedSeats = async (req, res) => {
+  try {
+    const { date, timeSlot } = req.query;
+    
+    if (!date || !timeSlot) {
+      return res.status(400).json({ success: false, message: 'Date and timeSlot required' });
+    }
+
+    const bookingDate = new Date(date);
+    bookingDate.setHours(0, 0, 0, 0);
+
+    const bookings = await Booking.find({
+      bookingDate,
+      timeSlot,
+      status: 'confirmed'
+    }).select('selectedSeats');
+
+    // Flatten array of arrays into a single array of seat strings
+    const occupiedSeats = bookings.reduce((acc, booking) => {
+      return acc.concat(booking.selectedSeats || []);
+    }, []);
+
+    res.json({ success: true, occupiedSeats });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
