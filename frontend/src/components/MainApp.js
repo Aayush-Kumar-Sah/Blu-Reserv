@@ -5,6 +5,7 @@ import BookingList from './BookingList';
 import BookingCalendar from './BookingCalendar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import SeatBooking from './SeatBooking'; 
 
 function MainApp() {
     const [activeView, setActiveView] = useState('form');
@@ -17,6 +18,12 @@ function MainApp() {
             </div>
 
             <div className="nav">
+                <button
+                    className={`nav-button ${activeView === 'seats' ? 'active' : ''}`}
+                    onClick={() => setActiveView('seats')}
+                >
+                    Visual Booking
+                </button>
                 <button
                     className={`nav-button ${activeView === 'form' ? 'active' : ''}`}
                     onClick={() => setActiveView('form')}
@@ -38,6 +45,7 @@ function MainApp() {
             </div>
 
             {activeView === 'form' && <BookingForm onBookingSuccess={() => setActiveView('list')} />}
+            {activeView === 'seats' && <SeatBooking onBookingSuccess={() => setActiveView('list')} />}
             {activeView === 'calendar' && <BookingCalendar />}
             {activeView === 'list' && <BookingList />}
 
