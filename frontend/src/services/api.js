@@ -27,6 +27,7 @@ export const bookingAPI = {
   cancelBooking: (id) => api.patch(`/bookings/${id}/cancel`),
 
   deleteBooking: (id) => api.delete(`/bookings/${id}`),
+
 };
 
 // Restaurant APIs

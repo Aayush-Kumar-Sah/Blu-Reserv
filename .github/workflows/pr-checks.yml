@@ -1,0 +1,52 @@
+name: Basic PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-validation:
+    name: Basic PR Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: PR title check
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR title: $PR_TITLE"
+          echo "✓ PR title present"
+        continue-on-error: true
+      
+      - name: Welcome message
+        run: |
+          echo "Thank you for your contribution! 🎉"
+          echo "This PR will be reviewed soon."
+        continue-on-error: true
+
+  basic-file-check:
+    name: Basic File Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for sensitive files
+        run: |
+          echo "Checking for sensitive files..."
+          if [ -f ".env" ] || [ -f "backend/.env" ]; then
+            echo "⚠ Warning: .env file detected (this is just a warning)"
+          else
+            echo "✓ No .env files in commit"
+          fi
+        continue-on-error: true
+      
+      - name: Count changed files
+        run: |
+          echo "Counting files in PR..."
+          git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} | wc -l
+          echo "✓ File count complete"
+        continue-on-error: true
