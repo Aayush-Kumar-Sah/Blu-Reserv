@@ -298,21 +298,35 @@ const BookingForm = ({ onBookingSuccess }) => {
             </div>
 
             <div className="form-row">
-              <div className="premium-input-group">
-                <label className="premium-label">Phone Number</label>
-                <input
-                  type="tel"
-                  name="customerPhone"
-                  value={formData.customerPhone}
-                  onChange={handleChange}
-                  required
-                  className={`premium-input ${validationErrors.customerPhone ? 'error' : ''}`}
-                  placeholder="+1 (555) 000-0000"
-                />
-                {validationErrors.customerPhone && (
-                  <span className="validation-error">{validationErrors.customerPhone}</span>
-                )}
-              </div>
+            <div className="premium-input-group">
+  <label className="premium-label">Phone Number</label>
+  <input
+    type="tel"
+    name="customerPhone"
+    value={formData.customerPhone}
+    maxLength={15}   // ✅ HARD LIMIT
+    onChange={(e) => {
+      // Allow only numbers and optional +
+      const value = e.target.value.replace(/[^0-9+]/g, "");
+
+      // Enforce max 15 digits (excluding +)
+      const digits = value.replace(/\D/g, "");
+      if (digits.length <= 15) {
+        setFormData(prev => ({ ...prev, customerPhone: value }));
+        setValidationErrors(prev => ({
+          ...prev,
+          customerPhone: validateField("customerPhone", value)
+        }));
+      }
+    }}
+    required
+    className={`premium-input ${validationErrors.customerPhone ? 'error' : ''}`}
+    placeholder="+1 (555) 000-0000"
+  />
+  {validationErrors.customerPhone && (
+    <span className="validation-error">{validationErrors.customerPhone}</span>
+  )}
+</div>
 
               <div className="premium-input-group">
                 <label className="premium-label">Party Size</label>
