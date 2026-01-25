@@ -72,7 +72,7 @@ function MainApp() {
                 </button>
             </div>
 
-            {activeView === 'form' && <BookingForm onBookingSuccess={() => setActiveView('list')} />}
+            {activeView === 'form' && (<BookingForm onBookingSuccess={() => setActiveView('list')} currentUser={user || demoUser}/>)}
             {activeView === 'calendar' && <BookingCalendar />}
             {activeView === 'list' && <BookingList />}
 
