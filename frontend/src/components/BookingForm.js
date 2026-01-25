@@ -142,9 +142,6 @@ const BookingForm = ({ onBookingSuccess, currentUser }) => {
     }
     setCurrentStep(prev => prev + 1);
   };
-    
-    setCurrentStep(prev => prev + 1);
-  };
 
   const prevStep = () => {
     setCurrentStep(prev => prev - 1);
