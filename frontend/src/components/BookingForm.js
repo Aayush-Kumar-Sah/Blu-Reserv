@@ -8,11 +8,12 @@ import SeatBooking from './SeatBooking';
 
 import eatIcon from "../assets/eating.png"
 
-const BookingForm = ({ onBookingSuccess }) => {
+const BookingForm = ({ onBookingSuccess, currentUser }) => { 
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerEmail: '',
-    customerPhone: '',
+    // Auto-fills from SSO data if it exists
+    customerName: currentUser?.firstName || currentUser?.name || '',
+    customerEmail: currentUser?.email || '',
+    customerPhone: currentUser?.phone || '', 
     bookingDate: new Date(),
     timeSlot: '',
     numberOfSeats: 1,
@@ -130,18 +131,17 @@ const BookingForm = ({ onBookingSuccess }) => {
   };
 
   const nextStep = () => {
-    // Validate current step before moving forward
     if (currentStep === 1) {
-      if (!formData.bookingDate || !formData.timeSlot || !formData.numberOfSeats) {
-        toast.warn('Please complete all fields');
-        return;
-      }
-    } else if (currentStep === 2) {
-      if (selectedSeatIds.length !== parseInt(formData.numberOfSeats)) {
-        toast.error(`Please select exactly ${formData.numberOfSeats} seats`);
-        return;
+      const requested = parseInt(formData.numberOfSeats);
+      const available = availability.availableSeats;
+  
+      if (requested > available) {
+        toast.error(`Only ${available} seats left for this time.`);
+        return; // Stop the user from proceeding
       }
     }
+    setCurrentStep(prev => prev + 1);
+  };
     
     setCurrentStep(prev => prev + 1);
   };
@@ -212,9 +212,9 @@ const BookingForm = ({ onBookingSuccess }) => {
       if (response.data.success) {
         toast.success('Booking created successfully!');
         setFormData({
-          customerName: '',
-          customerEmail: '',
-          customerPhone: '',
+          customerName: currentUser?.name || currentUser?.firstName || '',
+          customerEmail: currentUser?.email || '',
+          customerPhone: currentUser?.phone || '', // Keep phone if it's saved in their profile
           bookingDate: new Date(),
           timeSlot: '',
           numberOfSeats: 1,
