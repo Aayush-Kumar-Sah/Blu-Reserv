@@ -24,7 +24,7 @@ const FLOOR_3_LAYOUT = [
   { id: 'T5', x: 70, y: 80, seats: 4, type: 'rect-4', label: 'T5' },
 ];
 
-const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) => {
+const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack, embedded = false }) => {
   const [activeFloor, setActiveFloor] = useState(1);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [occupiedSeats, setOccupiedSeats] = useState([]);
@@ -149,17 +149,26 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
   );
 
   return (
-    <div className="seat-booking-wrapper">
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto 20px'}}>
-        <button onClick={onBack} className="btn-secondary" style={{padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'}}>
-            ← Back to Form
-        </button>
-        <div style={{textAlign: 'center'}}>
-            <h2 style={{margin: 0}}>Select {partySize} Seats</h2>
-            <div style={{fontSize: '0.9rem', color:'#666'}}>{bookingDate.toDateString()} | {timeSlot}</div>
+    <div className={embedded ? "seat-booking-embedded" : "seat-booking-wrapper"}>
+      {!embedded && (
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto 20px'}}>
+          <button onClick={onBack} className="btn-secondary" style={{padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'}}>
+              ← Back to Form
+          </button>
+          <div style={{textAlign: 'center'}}>
+              <h2 style={{margin: 0}}>Select {partySize} Seats</h2>
+              <div style={{fontSize: '0.9rem', color:'#666'}}>{bookingDate.toDateString()} | {timeSlot}</div>
+          </div>
+          <div style={{width: '90px'}}></div> {/* Spacer for alignment */}
         </div>
-        <div style={{width: '90px'}}></div> {/* Spacer for alignment */}
-      </div>
+      )}
+      
+      {embedded && (
+        <div style={{textAlign: 'center', marginBottom: '15px'}}>
+          <h3 style={{margin: '0 0 5px 0', fontSize: '1.1rem', color: '#2d3748'}}>Select {partySize} Seats</h3>
+          <div style={{fontSize: '0.85rem', color:'#718096'}}>{bookingDate.toDateString()} | {timeSlot}</div>
+        </div>
+      )}
 
       <div className="floor-selector">
         {[1, 2, 3].map(floor => (
@@ -196,7 +205,7 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
       </div>
       
 
-      <div className="booking-actions">
+      <div className={embedded ? "booking-actions-embedded" : "booking-actions"}>
         <div>
           <div style={{fontSize: '0.9rem', color: '#666'}}>Selected</div>
           <div style={{fontSize: '1.2rem', fontWeight: 'bold'}}>
@@ -204,6 +213,7 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
           </div>
         </div>
         <button 
+            type="button"
             className="action-btn" 
             onClick={handleConfirmSelection}
             disabled={selectedSeats.length !== partySize}
