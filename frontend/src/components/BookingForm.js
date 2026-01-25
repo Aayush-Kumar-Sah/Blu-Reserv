@@ -12,8 +12,8 @@ const BookingForm = ({ onBookingSuccess }) => {
   const demoUser = JSON.parse(localStorage.getItem('demoUser'));
 
   const [formData, setFormData] = useState({
-    customerName: user ? `${user.firstName} ${user.lastName}` : (demoUser ? 'Demo User' : ''),
-    customerEmail: user ? user.email : (demoUser ? 'demo@example.com' : ''),
+    customerName: user ? `${user.firstName} ${user.lastName}` : '',
+    customerEmail: user ? user.email : '',
     customerPhone: '',
     bookingDate: new Date(),
     timeSlot: '',
@@ -31,7 +31,7 @@ const BookingForm = ({ onBookingSuccess }) => {
   const [selectedSeatIds, setSelectedSeatIds] = useState([]);
 
   // Check if user is authenticated (IBM SSO or Demo)
-  const isAuthenticated = !!(user || demoUser);
+  const isIBMUser = !!user;
 
   useEffect(() => {
     fetchRestaurantInfo();
@@ -267,8 +267,8 @@ const BookingForm = ({ onBookingSuccess }) => {
                   value={formData.customerName}
                   onChange={handleChange}
                   required
-                  disabled={isAuthenticated} // Read-only if logged in
-                  className={`premium-input ${validationErrors.customerName ? 'error' : ''} ${isAuthenticated ? 'disabled' : ''}`}
+                  disabled={isIBMUser} // Read-only if logged in
+                  className={`premium-input ${validationErrors.customerName ? 'error' : ''} ${isIBMUser ? 'disabled' : ''}`}
                   placeholder="Enter your full name"
                 />
                 {validationErrors.customerName && (
@@ -284,8 +284,8 @@ const BookingForm = ({ onBookingSuccess }) => {
                   value={formData.customerEmail}
                   onChange={handleChange}
                   required
-                  disabled={isAuthenticated} // Read-only if logged in
-                  className={`premium-input ${validationErrors.customerEmail ? 'error' : ''} ${isAuthenticated ? 'disabled' : ''}`}
+                  disabled={isIBMUser} // Read-only if logged in
+                  className={`premium-input ${validationErrors.customerEmail ? 'error' : ''} ${isIBMUser ? 'disabled' : ''}`}
                   placeholder="your.email@example.com"
                 />
                 {validationErrors.customerEmail && (
