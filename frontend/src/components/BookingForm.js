@@ -88,10 +88,13 @@ const BookingForm = ({ onBookingSuccess }) => {
         break;
       
       case 'customerPhone':
-        if (value && !/^[+\d\s()-]+$/.test(value)) {
-          error = 'Phone number should only contain numbers and +()-';
-        } else if (value && value.replace(/[^\d]/g, '').length < 10) {
-          error = 'Phone number must be at least 10 digits';
+        if (value) {
+          const digits = value.replace(/\D/g, '');
+          if (!/^[+\d\s()-]+$/.test(value)) {
+            error = 'Phone number can only contain numbers, +, -, (), and spaces';
+          } else if (digits.length < 10 || digits.length > 15) {
+            error = 'Phone number must be between 10 and 15 digits';
+          }
         }
         break;
       
@@ -102,8 +105,8 @@ const BookingForm = ({ onBookingSuccess }) => {
         break;
       
       case 'numberOfSeats':
-        if (value && (value < 1 || value > 20)) {
-          error = 'Number of guests must be between 1 and 20';
+        if (value && (value < 1 || value > 100)) {
+          error = 'Number of guests must be between 1 and 100';
         }
         break;
       
@@ -329,7 +332,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                   value={formData.numberOfSeats}
                   onChange={handleChange}
                   min="1"
-                  max="20"
+                  max="100"
                   required
                   className={`premium-input ${validationErrors.numberOfSeats ? 'error' : ''}`}
                   placeholder="Number of guests"

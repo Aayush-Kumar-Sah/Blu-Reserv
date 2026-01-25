@@ -120,7 +120,7 @@ const BookingCalendar = () => {
           {timeSlots.map((slot) => {
             const slotBookings = getBookingsForSlot(slot);
             const availability = slotAvailability[slot] || {};
-            const totalSeats = availability.totalSeats || 50;
+            const totalSeats = availability.totalSeats || 100;
             const availableSeats = availability.availableSeats || 0;
             const bookedSeats = availability.bookedSeats || 0;
             const occupancyRate = totalSeats > 0 ? (bookedSeats / totalSeats * 100).toFixed(0) : 0;
