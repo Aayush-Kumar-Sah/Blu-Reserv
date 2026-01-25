@@ -3,6 +3,47 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentication management
+ */
+
+/**
+ * @swagger
+ * /api/auth/callback:
+ *   post:
+ *     summary: OAuth callback handler
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: Authorization code from OAuth provider
+ *     responses:
+ *       200:
+ *         description: User authenticated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 user:
+ *                   type: object
+ *                   description: User profile information
+ *       500:
+ *         description: Server error
+ */
 router.post('/callback', async (req, res) => {
   const { code } = req.body;
 

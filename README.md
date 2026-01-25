@@ -2,6 +2,9 @@
 
 A full-stack restaurant seat booking system built with React, Node.js, Express, and MongoDB.
 
+## To access the Swagger UI 
+http://localhost:5555/api-docs
+
 ## Features
 
 - **Time Slot Management**: 1-hour time slots for booking

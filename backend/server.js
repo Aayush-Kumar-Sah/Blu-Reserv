@@ -4,6 +4,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./config/swagger');
 
 const bookingRoutes = require('./routes/bookingRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
@@ -25,6 +27,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/manager', managerRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 const { sendReminderEmail } = require('./services/emailService');
 
