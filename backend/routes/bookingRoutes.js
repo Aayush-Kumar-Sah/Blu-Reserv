@@ -8,6 +8,8 @@ router.get('/', bookingController.getAllBookings);
 // Check availability
 router.get('/availability', bookingController.checkAvailability);
 
+router.get('/occupied', bookingController.getOccupiedSeats);
+
 // Get bookings by date
 router.get('/date/:date', bookingController.getBookingsByDate);
 

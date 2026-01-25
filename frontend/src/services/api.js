@@ -20,6 +20,9 @@ export const bookingAPI = {
   checkAvailability: (date, timeSlot) =>
     api.get('/bookings/availability', { params: { date, timeSlot } }),
 
+  getOccupiedSeats: (date, timeSlot) => 
+    api.get('/bookings/occupied', { params: { date, timeSlot } }),
+
   createBooking: (bookingData) => api.post('/bookings', bookingData),
 
   updateBooking: (id, bookingData) => api.put(`/bookings/${id}`, bookingData),
