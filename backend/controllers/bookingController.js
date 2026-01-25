@@ -14,6 +14,38 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
+exports.getOccupiedSeats = async (req, res) => {
+  try {
+    const { date, timeSlot } = req.query;
+    
+    // Validation
+    if (!date || typeof date !== 'string' || !timeSlot || typeof timeSlot !== 'string') {
+      return res.status(400).json({ success: false, message: 'Date and timeSlot required' });
+    }
+
+    const bookingDate = new Date(date);
+    if (isNaN(bookingDate.getTime())) {
+         return res.status(400).json({ success: false, message: 'Invalid date format' });
+    }
+    bookingDate.setHours(0, 0, 0, 0);
+
+    const bookings = await Booking.find({
+      bookingDate,
+      timeSlot,
+      status: 'confirmed'
+    }).select('selectedSeats');
+
+    // Flatten array
+    const occupiedSeats = bookings.reduce((acc, booking) => {
+      return acc.concat(booking.selectedSeats || []);
+    }, []);
+
+    res.json({ success: true, occupiedSeats });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Get booking by ID
 exports.getBookingById = async (req, res) => {
   try {
@@ -150,10 +182,12 @@ exports.createBooking = async (req, res) => {
       bookingDate,
       timeSlot,
       numberOfSeats,
+      selectedSeats, // We will use this now
       specialRequests,
       notificationPreference 
     } = req.body;
 
+    // 1. BASIC VALIDATION
     if (!customerName || !customerEmail || !customerPhone || !bookingDate || !timeSlot || !numberOfSeats) {
       return res.status(400).json({
         success: false,
@@ -161,37 +195,53 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-   //  validate timeSlot format: "HH:MM-HH:MM" (24-hour format)
-const timeSlotPattern = /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/;
+    // 2. DEFINE DATE FIRST (Fixes ReferenceError)
+    // normalizing date: "2026-01-26" -> Local Date Object at 00:00:00
+    const baseDate = new Date(bookingDate + "T00:00:00"); 
 
-if (!timeSlotPattern.test(timeSlot)) {
-  return res.status(400).json({
-    success: false,
-    message: 'Invalid timeSlot format. Expected HH:MM-HH:MM'
-  });
-}
+    // 3. SPECIFIC SEAT CONFLICT CHECK
+    if (selectedSeats && selectedSeats.length > 0) {
+      const conflictingBooking = await Booking.findOne({
+        bookingDate: baseDate,
+        timeSlot,
+        status: 'confirmed',
+        selectedSeats: { $in: selectedSeats } // Checks if ANY requested seat equals ANY booked seat
+      });
 
-// normalize date
-// bookingDate is like: "2026-01-22"
-const baseDate = new Date(bookingDate + "T00:00:00"); // local date, not UTC
+      if (conflictingBooking) {
+        // Find which specific seats matched to give better error message
+        const taken = selectedSeats.filter(s => conflictingBooking.selectedSeats.includes(s));
+        return res.status(400).json({
+          success: false,
+          message: `The following seats are already booked: ${taken.join(', ')}. Please select different seats.`
+        });
+      }
+    }
 
-const startTime = timeSlot.split('-')[0]; // "18:00"
-const [hh, mm] = startTime.split(':');
+    // 4. PARSE TIME SLOT
+    const timeSlotPattern = /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/;
+    if (!timeSlotPattern.test(timeSlot)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid timeSlot format. Expected HH:MM-HH:MM'
+      });
+    }
 
-// create local datetime
-const bookingDateTime = new Date(
-  baseDate.getFullYear(),
-  baseDate.getMonth(),
-  baseDate.getDate(),
-  Number(hh),
-  Number(mm),
-  0,
-  0
-);
+    const startTime = timeSlot.split('-')[0]; // "18:00"
+    const [hh, mm] = startTime.split(':');
 
+    // create local datetime for notification/logic
+    const bookingDateTime = new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate(),
+      Number(hh),
+      Number(mm),
+      0,
+      0
+    );
 
-
-    // seat logic
+    // 5. GENERIC CAPACITY CHECK
     const restaurant = await Restaurant.findOne();
     const totalSeats = restaurant ? restaurant.totalSeats : 50;
 
@@ -201,8 +251,8 @@ const bookingDateTime = new Date(
       status: 'confirmed'
     });
 
-    const bookedSeats = existingBookings.reduce((sum, b) => sum + b.numberOfSeats, 0);
-    const availableSeats = totalSeats - bookedSeats;
+    const bookedSeatsCount = existingBookings.reduce((sum, b) => sum + b.numberOfSeats, 0);
+    const availableSeats = totalSeats - bookedSeatsCount;
 
     if (numberOfSeats > availableSeats) {
       return res.status(400).json({
@@ -211,7 +261,7 @@ const bookingDateTime = new Date(
       });
     }
 
-    // create booking with bookingDateTime
+    // 6. SAVE BOOKING (Including selectedSeats)
     const booking = new Booking({
       customerName,
       customerEmail,
@@ -220,6 +270,7 @@ const bookingDateTime = new Date(
       timeSlot,
       bookingDateTime,  
       numberOfSeats,
+      selectedSeats: selectedSeats || [], // <--- THIS WAS MISSING. NOW IT SAVES SEATS.
       specialRequests: specialRequests || '',
       reminderSent: false,
       timeAlertSent: false,
@@ -227,29 +278,25 @@ const bookingDateTime = new Date(
       notificationPreference: notificationPreference 
     });
 
-   await booking.save();
+    await booking.save();
 
-// 🔔 Instant confirmation notifications
-let sent = false;
+    // 🔔 Instant confirmation notifications
+    let sent = false;
+    if (booking.notificationPreference === 'sms' || booking.notificationPreference === 'both') {
+      const smsOk = await sendBookingConfirmationSMS(booking);
+      sent = sent || smsOk;
+    }
 
-if (booking.notificationPreference === 'sms' || booking.notificationPreference === 'both') {
-  const smsOk = await sendBookingConfirmationSMS(booking);
-  sent = sent || smsOk;
-}
+    if (booking.notificationPreference === 'email' || booking.notificationPreference === 'both') {
+      const emailOk = await sendBookingConfirmationEmail(booking);
+      sent = sent || emailOk;
+    }
 
-if (booking.notificationPreference === 'email' || booking.notificationPreference === 'both') {
-  const emailOk = await sendBookingConfirmationEmail(booking);
-  sent = sent || emailOk;
-}
-
-console.log("📨 Booking confirmation sent:", sent);
-
-res.status(201).json({
-  success: true,
-  message: 'Booking created successfully',
-  booking
-});
-
+    res.status(201).json({
+      success: true,
+      message: 'Booking created successfully',
+      booking
+    });
 
   } catch (error) {
     console.error("Create booking error:", error);

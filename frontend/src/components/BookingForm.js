@@ -3,6 +3,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { bookingAPI, restaurantAPI } from '../services/api';
 import { toast } from 'react-toastify';
+import SeatBooking from './SeatBooking';
 
 import eatIcon from "../assets/eating.png"
 
@@ -23,6 +24,9 @@ const BookingForm = ({ onBookingSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [restaurant, setRestaurant] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [showSeatMap, setShowSeatMap] = useState(false);
+  const [selectedSeatIds, setSelectedSeatIds] = useState([]);
+
 
   useEffect(() => {
     fetchRestaurantInfo();
@@ -32,6 +36,7 @@ const BookingForm = ({ onBookingSuccess }) => {
   useEffect(() => {
     if (formData.timeSlot && formData.bookingDate) {
       checkAvailability();
+      setSelectedSeatIds([]); 
     }
   }, [formData.timeSlot, formData.bookingDate]);
 
@@ -111,81 +116,74 @@ const BookingForm = ({ onBookingSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Validate the field
     const error = validateField(name, value);
-    
-    // Update validation errors
-    setValidationErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setValidationErrors(prev => ({ ...prev, [name]: error }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleDateChange = (date) => {
-    setFormData(prev => ({
-      ...prev,
-      bookingDate: date,
-      timeSlot: '' // Reset time slot when date changes
-    }));
+    setFormData(prev => ({ ...prev, bookingDate: date, timeSlot: '' }));
   };
 
-  // Filter time slots based on current time if booking is for today
-  const getAvailableTimeSlots = () => {
-    const today = new Date();
-    const selectedDate = new Date(formData.bookingDate);
-    
-    // Reset time parts for date comparison
-    today.setHours(0, 0, 0, 0);
-    selectedDate.setHours(0, 0, 0, 0);
-    
-    // If booking is not for today, show all slots
-    if (selectedDate.getTime() !== today.getTime()) {
-      return timeSlots;
-    }
-    
-    // If booking is for today, filter out past slots
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const currentTimeInMinutes = currentHour * 60 + currentMinute;
-    
-    return timeSlots.filter(slot => {
-      // Extract start time from slot (format: "HH:MM-HH:MM")
-      const startTime = slot.split('-')[0].trim();
-      const [slotHour, slotMinute] = startTime.split(':').map(Number);
-      const slotTimeInMinutes = slotHour * 60 + slotMinute;
-      
-      // Only show slots that haven't started yet
-      return slotTimeInMinutes > currentTimeInMinutes;
-    });
-  };
-
-  const handleSubmit = async (e) => {
+  // NEW: Trigger the Seat Map View
+  const handleSelectSeatsClick = (e) => {
     e.preventDefault();
     
-    // Validate all fields before submission
+    // Validate basic info first
     const errors = {};
     errors.customerName = validateField('customerName', formData.customerName);
     errors.customerEmail = validateField('customerEmail', formData.customerEmail);
     errors.customerPhone = validateField('customerPhone', formData.customerPhone);
     errors.numberOfSeats = validateField('numberOfSeats', formData.numberOfSeats);
     
-    // Remove empty errors
-    Object.keys(errors).forEach(key => {
-      if (!errors[key]) delete errors[key];
-    });
-    
-    // If there are validation errors, show them and don't submit
-    if (Object.keys(errors).length > 0) {
+    const hasErrors = Object.keys(errors).some(key => errors[key]);
+    if (hasErrors) {
       setValidationErrors(errors);
-      toast.error('Please fix the validation errors before submitting');
+      toast.error('Please fix validation errors before selecting seats');
       return;
+    }
+
+    if (!formData.timeSlot) {
+      toast.warn('Please select a time slot first');
+      return;
+    }
+
+    setShowSeatMap(true); // Switch view
+  };
+
+  // NEW: Callback when seats are confirmed in the child component
+  const handleSeatsConfirmed = (seats) => {
+    setSelectedSeatIds(seats);
+    setShowSeatMap(false);
+    toast.info(`${seats.length} seats selected.`);
+  };
+
+  // Filter time slots based on current time if booking is for today
+  const getAvailableTimeSlots = () => {
+    const today = new Date();
+    const selectedDate = new Date(formData.bookingDate);
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate.getTime() !== today.getTime()) return timeSlots;
+    
+    const now = new Date();
+    const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    return timeSlots.filter(slot => {
+      const startTime = slot.split('-')[0].trim();
+      const [slotHour, slotMinute] = startTime.split(':').map(Number);
+      return (slotHour * 60 + slotMinute) > currentTimeInMinutes;
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Ensure seats match party size
+    if (selectedSeatIds.length !== parseInt(formData.numberOfSeats)) {
+        toast.error(`Please select exactly ${formData.numberOfSeats} seats.`);
+        return;
     }
     
     setLoading(true);
@@ -193,18 +191,15 @@ const BookingForm = ({ onBookingSuccess }) => {
     try {
       const bookingData = {
         ...formData,
-        bookingDate: formData.bookingDate.toISOString().split('T')[0]
+        bookingDate: formData.bookingDate.toISOString().split('T')[0],
+        selectedSeats: selectedSeatIds // Include the selected seats
       };
       console.log("SUBMIT DATA:", bookingData);
-
 
       const response = await bookingAPI.createBooking(bookingData);
       
       if (response.data.success) {
         toast.success('Booking created successfully!');
-
-        
-        // Reset form
         setFormData({
           customerName: '',
           customerEmail: '',
@@ -212,14 +207,12 @@ const BookingForm = ({ onBookingSuccess }) => {
           bookingDate: new Date(),
           timeSlot: '',
           numberOfSeats: 1,
-          specialRequests: ''
+          specialRequests: '',
+          notificationPreference: 'both'
         });
-        
+        setSelectedSeatIds([]);
         setAvailability({});
-        
-        if (onBookingSuccess) {
-          onBookingSuccess();
-        }
+        if (onBookingSuccess) onBookingSuccess();
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Failed to create booking';
@@ -228,6 +221,19 @@ const BookingForm = ({ onBookingSuccess }) => {
       setLoading(false);
     }
   };
+
+  // RENDER SEAT MAP if creating selection
+  if (showSeatMap) {
+    return (
+      <SeatBooking 
+        bookingDate={formData.bookingDate}
+        timeSlot={formData.timeSlot}
+        partySize={parseInt(formData.numberOfSeats)}
+        onConfirm={handleSeatsConfirmed}
+        onBack={() => setShowSeatMap(false)}
+      />
+    );
+  }
 
   return (
     <div className="premium-booking-container fade-in">
@@ -378,31 +384,47 @@ const BookingForm = ({ onBookingSuccess }) => {
           </div>
         </div>
 
-        {formData.timeSlot && availability.availableSeats !== undefined && (
-            <div className={`premium-availability ${availability.availableSeats > 0 ? 'available' : 'full'}`}>
-              <div className="availability-content">
-                <div className="availability-icon-wrapper">
-                  {availability.availableSeats > 0 ? (
-                    <svg className="availability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="availability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  )}
-                </div>
-                <div className="availability-text">
-                  <div className="availability-title">
-                    {availability.availableSeats > 0 ? 'Tables Available' : 'Fully Booked'}
-                  </div>
-                  <div className="availability-count">
-                    {availability.availableSeats} of {availability.totalSeats} seats remaining
-                  </div>
-                </div>
-              </div>
+        {selectedSeatIds.length > 0 ? (
+            <div className="premium-section" style={{background: '#f0fff4', border: '1px solid #48bb78', padding: '15px', borderRadius: '8px'}}>
+                <h3 className="section-heading" style={{color: '#2f855a', marginBottom: '5px'}}>✓ Seats Selected</h3>
+                <p style={{margin:0, color: '#444'}}>
+                    Selected <strong>{selectedSeatIds.length}</strong> seats: {selectedSeatIds.join(', ')}
+                </p>
+                <button 
+                    type="button" 
+                    onClick={handleSelectSeatsClick}
+                    style={{marginTop: '10px', background: 'white', border: '1px solid #48bb78', color: '#2f855a', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem'}}
+                >
+                    Change Seats
+                </button>
             </div>
-          )}
+        ) : (
+            <div className="seat-selection-cta" style={{marginBottom: '20px'}}>
+                  {formData.timeSlot && (
+                    <div style={{textAlign: 'center', padding: '10px'}}>
+                        <button 
+                            type="button" 
+                            className="action-btn"
+                            onClick={handleSelectSeatsClick}
+                            style={{
+                                width: '100%',
+                                background: '#667eea', 
+                                color: 'white',
+                                padding: '12px 20px',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontSize: '1rem',
+                                fontWeight: 'bold',
+                                boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)'
+                            }}
+                        >
+                            🪑 Select Your Seats (Required)
+                        </button>
+                    </div>
+                  )}
+            </div>
+        )}
 
           <div className="premium-section">
             <h3 className="section-heading">Special Requests</h3>
