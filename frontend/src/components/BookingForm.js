@@ -4,13 +4,16 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { bookingAPI, restaurantAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import SeatBooking from './SeatBooking';
-
 import eatIcon from "../assets/eating.png"
 
 const BookingForm = ({ onBookingSuccess }) => {
+  // Get logged-in user info
+  const user = JSON.parse(localStorage.getItem('user'));
+  const demoUser = JSON.parse(localStorage.getItem('demoUser'));
+
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerEmail: '',
+    customerName: user ? `${user.firstName} ${user.lastName}` : (demoUser ? 'Demo User' : ''),
+    customerEmail: user ? user.email : (demoUser ? 'demo@example.com' : ''),
     customerPhone: '',
     bookingDate: new Date(),
     timeSlot: '',
@@ -27,6 +30,8 @@ const BookingForm = ({ onBookingSuccess }) => {
   const [showSeatMap, setShowSeatMap] = useState(false);
   const [selectedSeatIds, setSelectedSeatIds] = useState([]);
 
+  // Check if user is authenticated (IBM SSO or Demo)
+  const isAuthenticated = !!(user || demoUser);
 
   useEffect(() => {
     fetchRestaurantInfo();
@@ -39,12 +44,6 @@ const BookingForm = ({ onBookingSuccess }) => {
       setSelectedSeatIds([]); 
     }
   }, [formData.timeSlot, formData.bookingDate]);
-
-  
-  useEffect(() => {
-  console.log("PREFERENCE STATE:", formData.notificationPreference);
-}, [formData.notificationPreference]);
-
 
   const fetchRestaurantInfo = async () => {
     try {
@@ -125,11 +124,9 @@ const BookingForm = ({ onBookingSuccess }) => {
     setFormData(prev => ({ ...prev, bookingDate: date, timeSlot: '' }));
   };
 
-  // NEW: Trigger the Seat Map View
   const handleSelectSeatsClick = (e) => {
     e.preventDefault();
     
-    // Validate basic info first
     const errors = {};
     errors.customerName = validateField('customerName', formData.customerName);
     errors.customerEmail = validateField('customerEmail', formData.customerEmail);
@@ -148,17 +145,15 @@ const BookingForm = ({ onBookingSuccess }) => {
       return;
     }
 
-    setShowSeatMap(true); // Switch view
+    setShowSeatMap(true);
   };
 
-  // NEW: Callback when seats are confirmed in the child component
   const handleSeatsConfirmed = (seats) => {
     setSelectedSeatIds(seats);
     setShowSeatMap(false);
     toast.info(`${seats.length} seats selected.`);
   };
 
-  // Filter time slots based on current time if booking is for today
   const getAvailableTimeSlots = () => {
     const today = new Date();
     const selectedDate = new Date(formData.bookingDate);
@@ -180,7 +175,6 @@ const BookingForm = ({ onBookingSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Ensure seats match party size
     if (selectedSeatIds.length !== parseInt(formData.numberOfSeats)) {
         toast.error(`Please select exactly ${formData.numberOfSeats} seats.`);
         return;
@@ -192,17 +186,16 @@ const BookingForm = ({ onBookingSuccess }) => {
       const bookingData = {
         ...formData,
         bookingDate: formData.bookingDate.toISOString().split('T')[0],
-        selectedSeats: selectedSeatIds // Include the selected seats
+        selectedSeats: selectedSeatIds
       };
-      console.log("SUBMIT DATA:", bookingData);
 
       const response = await bookingAPI.createBooking(bookingData);
       
       if (response.data.success) {
         toast.success('Booking created successfully!');
         setFormData({
-          customerName: '',
-          customerEmail: '',
+          customerName: user ? `${user.firstName} ${user.lastName}` : (demoUser ? 'Demo User' : ''),
+          customerEmail: user ? user.email : (demoUser ? 'demo@example.com' : ''),
           customerPhone: '',
           bookingDate: new Date(),
           timeSlot: '',
@@ -222,7 +215,6 @@ const BookingForm = ({ onBookingSuccess }) => {
     }
   };
 
-  // RENDER SEAT MAP if creating selection
   if (showSeatMap) {
     return (
       <SeatBooking 
@@ -240,11 +232,7 @@ const BookingForm = ({ onBookingSuccess }) => {
       <div className="premium-form-card">
         <div className="premium-header">
           <div className="restaurant-logo">
-            <img
-              src={eatIcon}
-              alt="Restaurant logo"
-              className="restaurant-logo-icon"
-            />
+            <img src={eatIcon} alt="Restaurant logo" className="restaurant-logo-icon" />
           </div>
           <h1 className="premium-title">Reserve Your Seats</h1>
           <p className="premium-subtitle">Experience fine dining at its best</p>
@@ -267,7 +255,7 @@ const BookingForm = ({ onBookingSuccess }) => {
           </div>
         )}
 
-<form onSubmit={handleSubmit} className="premium-form">
+        <form onSubmit={handleSubmit} className="premium-form">
           <div className="premium-section">
             <h3 className="section-heading">Guest Information</h3>
             <div className="form-row">
@@ -279,7 +267,8 @@ const BookingForm = ({ onBookingSuccess }) => {
                   value={formData.customerName}
                   onChange={handleChange}
                   required
-                  className={`premium-input ${validationErrors.customerName ? 'error' : ''}`}
+                  disabled={isAuthenticated} // Read-only if logged in
+                  className={`premium-input ${validationErrors.customerName ? 'error' : ''} ${isAuthenticated ? 'disabled' : ''}`}
                   placeholder="Enter your full name"
                 />
                 {validationErrors.customerName && (
@@ -295,7 +284,8 @@ const BookingForm = ({ onBookingSuccess }) => {
                   value={formData.customerEmail}
                   onChange={handleChange}
                   required
-                  className={`premium-input ${validationErrors.customerEmail ? 'error' : ''}`}
+                  disabled={isAuthenticated} // Read-only if logged in
+                  className={`premium-input ${validationErrors.customerEmail ? 'error' : ''} ${isAuthenticated ? 'disabled' : ''}`}
                   placeholder="your.email@example.com"
                 />
                 {validationErrors.customerEmail && (
@@ -337,11 +327,11 @@ const BookingForm = ({ onBookingSuccess }) => {
                 {validationErrors.numberOfSeats && (
                   <span className="validation-error">{validationErrors.numberOfSeats}</span>
                 )}
+              </div>
             </div>
           </div>
-        </div>
 
-<div className="premium-section">
+          <div className="premium-section">
             <h3 className="section-heading">Reservation Details</h3>
             <div className="premium-input-group">
               <label className="premium-label">Select Date</label>
@@ -365,7 +355,6 @@ const BookingForm = ({ onBookingSuccess }) => {
                       type="button"
                       className={`premium-time-slot ${formData.timeSlot === slot ? 'selected' : ''}`}
                       onClick={() => setFormData(prev => ({ ...prev, timeSlot: slot }))}
-                      
                     >
                       {slot}
                     </button>
@@ -380,11 +369,11 @@ const BookingForm = ({ onBookingSuccess }) => {
                     No available time slots for today. Please select a future date.
                   </div>
                 )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {selectedSeatIds.length > 0 ? (
+          {selectedSeatIds.length > 0 ? (
             <div className="premium-section" style={{background: '#f0fff4', border: '1px solid #48bb78', padding: '15px', borderRadius: '8px'}}>
                 <h3 className="section-heading" style={{color: '#2f855a', marginBottom: '5px'}}>✓ Seats Selected</h3>
                 <p style={{margin:0, color: '#444'}}>
@@ -440,50 +429,48 @@ const BookingForm = ({ onBookingSuccess }) => {
               />
             </div>
           </div>
+
           <div className="premium-section">
-  <h3 className="section-heading">Notification Preference</h3>
-
-  <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-    <label>
-      <input
-        type="radio"
-        name="notificationPreference"
-        value="sms"
-        checked={formData.notificationPreference === 'sms'}
-        onChange={handleChange}
-      />
-      SMS
-    </label>
-
-    <label>
-      <input
-        type="radio"
-        name="notificationPreference"
-        value="email"
-        checked={formData.notificationPreference === 'email'}
-        onChange={handleChange}
-      />
-      Email
-    </label>
-
-    <label>
-      <input
-        type="radio"
-        name="notificationPreference"
-        value="both"
-        checked={formData.notificationPreference === 'both'}
-        onChange={handleChange}
-      />
-      Both
-    </label>
-  </div>
-</div>
-
+            <h3 className="section-heading">Notification Preference</h3>
+            <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+              <label style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
+                <input
+                  type="radio"
+                  name="notificationPreference"
+                  value="sms"
+                  checked={formData.notificationPreference === 'sms'}
+                  onChange={handleChange}
+                />
+                SMS
+              </label>
+              <label style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
+                <input
+                  type="radio"
+                  name="notificationPreference"
+                  value="email"
+                  checked={formData.notificationPreference === 'email'}
+                  onChange={handleChange}
+                />
+                Email
+              </label>
+              <label style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
+                <input
+                  type="radio"
+                  name="notificationPreference"
+                  value="both"
+                  checked={formData.notificationPreference === 'both'}
+                  onChange={handleChange}
+                />
+                Both
+              </label>
+            </div>
+          </div>
 
           <button 
             type="submit" 
             className="premium-submit-btn"
-            disabled={loading || !formData.timeSlot || availability.availableSeats === 0}
+            disabled={loading || !formData.timeSlot || selectedSeatIds.length === 0}
+            style={{ opacity: (!formData.timeSlot || selectedSeatIds.length === 0) ? 0.6 : 1 }}
           >
             {loading ? (
               <>
