@@ -149,7 +149,7 @@ exports.checkAvailability = async (req, res) => {
 
     // Get restaurant settings
     const restaurant = await Restaurant.findOne();
-    const totalSeats = restaurant ? restaurant.totalSeats : 50;
+    const totalSeats = restaurant ? restaurant.totalSeats : 100;
 
     // Get confirmed bookings for this slot
     const bookings = await Booking.find({
@@ -243,7 +243,7 @@ exports.createBooking = async (req, res) => {
 
     // 5. GENERIC CAPACITY CHECK
     const restaurant = await Restaurant.findOne();
-    const totalSeats = restaurant ? restaurant.totalSeats : 50;
+    const totalSeats = restaurant ? restaurant.totalSeats : 100;
 
     const existingBookings = await Booking.find({
       bookingDate: baseDate,
@@ -323,7 +323,7 @@ exports.updateBooking = async (req, res) => {
       const seats = updates.numberOfSeats || booking.numberOfSeats;
 
       const restaurant = await Restaurant.findOne();
-      const totalSeats = restaurant ? restaurant.totalSeats : 50;
+      const totalSeats = restaurant ? restaurant.totalSeats : 100;
 
       const existingBookings = await Booking.find({
         _id: { $ne: id },

@@ -9,7 +9,7 @@ exports.getRestaurant = async (req, res) => {
     if (!restaurant) {
       restaurant = new Restaurant({
         name: 'My Restaurant',
-        totalSeats: 50,
+        totalSeats: 100,
         openingTime: '10:00',
         closingTime: '22:00',
         slotDuration: 60,

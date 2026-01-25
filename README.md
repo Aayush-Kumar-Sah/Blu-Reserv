@@ -79,7 +79,7 @@ The backend is an Express.js server providing a JSON API.
 3.  **API Request**: Frontend sends `GET /api/bookings/availability?date=...&timeSlot=...` to Backend.
 4.  **Backend Logic**:
     *   `bookingController.checkAvailability` runs.
-    *   Queries `Restaurant` model for total seats (default 50).
+    *   Queries `Restaurant` model for total seats (default 100).
     *   Queries `Booking` model for all *confirmed* bookings at that time.
     *   Calculates `Available = Total - Sum(Booked)`.
     *   Returns JSON `{ availableSeats: 5 }`.

@@ -9,7 +9,7 @@ const restaurantSchema = new mongoose.Schema({
   totalSeats: {
     type: Number,
     required: true,
-    default: 50
+    default: 100
   },
   openingTime: {
     type: String,
