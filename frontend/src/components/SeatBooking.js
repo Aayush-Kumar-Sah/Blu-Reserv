@@ -24,7 +24,7 @@ const FLOOR_3_LAYOUT = [
   { id: 'T5', x: 70, y: 80, seats: 4, type: 'rect-4', label: 'T5' },
 ];
 
-const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) => {
+const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack, embedded }) => {
   const [activeFloor, setActiveFloor] = useState(1);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [occupiedSeats, setOccupiedSeats] = useState([]);
@@ -172,16 +172,18 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
   );
 
   return (
-    <div className="seat-booking-wrapper">
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto 20px'}}>
-        <button onClick={onBack} className="btn-secondary" style={{padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'}}>
-            ← Back to Form
-        </button>
+    <div className="seat-booking-wrapper" style={embedded ? {padding: '10px', minHeight: 'auto', paddingBottom: '20px'} : {}}>
+      <div style={{display: 'flex', justifyContent: embedded ? 'center' : 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto 20px'}}>
+        {!embedded && (
+          <button onClick={onBack} className="btn-secondary" style={{padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'}}>
+              ← Back to Form
+          </button>
+        )}
         <div style={{textAlign: 'center'}}>
-            <h2 style={{margin: 0}}>Select {partySize} Seats</h2>
+            <h2 style={{margin: 0, fontSize: embedded ? '1.3rem' : '2rem'}}>Select {partySize} Seats</h2>
             <div style={{fontSize: '0.9rem', color:'#666'}}>{bookingDate.toDateString()} | {timeSlot}</div>
         </div>
-        <div style={{width: '90px'}}></div> {/* Spacer for alignment */}
+        {!embedded && <div style={{width: '90px'}}></div>} {/* Spacer for alignment */}
       </div>
 
       <div className="floor-selector">
@@ -198,7 +200,7 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
 
       <StatusLegend />
 
-      <div className="cafeteria-layout">
+      <div className="cafeteria-layout" style={embedded ? {height: '450px', maxWidth: '800px'} : {}}>
         <div className="entrance-label">ENTRANCE</div>
         
         {/* NEW: Visual Window Indicators */}
@@ -228,6 +230,7 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
           </div>
         </div>
         <button 
+            type="button"
             className="action-btn" 
             onClick={handleConfirmSelection}
             disabled={selectedSeats.length !== partySize}

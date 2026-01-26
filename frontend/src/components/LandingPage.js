@@ -21,7 +21,7 @@ const LandingPage = () => {
         const demoUser = {
             firstName: 'Demo',
             lastName: 'User',
-            email: 'demo@local',
+            email: 'demo@local.com',
             role: 'demo'
         };
 
