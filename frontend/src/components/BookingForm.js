@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './BookingForm.css';
+import '../styles/bookingform.css';
 import { bookingAPI, restaurantAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import SeatBooking from './SeatBooking';

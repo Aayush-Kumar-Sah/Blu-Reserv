@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { maintenanceAPI } from '../services/api';
 import { toast } from 'react-toastify';
-import './SeatBooking.css';
+import '../styles/seatbooking.css';
 
 const FLOOR_1_2_LAYOUT = [
   { id: 'T1', x: 20, y: 20, seats: 4, label: 'T1' },
