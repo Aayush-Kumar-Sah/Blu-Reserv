@@ -49,4 +49,16 @@ export const managerAPI = {
   login: (credentials) => api.post('/manager/login', credentials),
 };
 
+export const maintenanceAPI = {
+  getMaintenanceSeats: () => api.get('/maintenance'),
+  
+  getAllRecords: () => api.get('/maintenance/records'),
+  
+  markSeatMaintenance: (data) => api.post('/maintenance', data),
+  
+  removeSeatMaintenance: (id) => api.delete(`/maintenance/${id}`),
+  
+  bulkRemoveMaintenance: (seatIds) => api.post('/maintenance/bulk', { seatIds })
+};
+
 export default api;

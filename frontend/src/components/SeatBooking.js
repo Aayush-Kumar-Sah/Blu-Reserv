@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { bookingAPI } from '../services/api'; 
+import { bookingAPI, maintenanceAPI } from '../services/api'; 
 import './SeatBooking.css';
 
 // Floor 1 & 2: 6 tables of 4, 2 tables of 8 (40 seats)
@@ -29,11 +29,14 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [occupiedSeats, setOccupiedSeats] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [maintenanceSeats, setMaintenanceSeats] = useState([]); // NEW
+
 
   const currentLayout = activeFloor === 3 ? FLOOR_3_LAYOUT : FLOOR_1_2_LAYOUT;
 
   useEffect(() => {
     fetchOccupiedSeats();
+    fetchMaintenanceSeats();
     // eslint-disable-next-line
   }, [bookingDate, timeSlot]);
 
@@ -55,11 +58,22 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
     }
   };
 
+  const fetchMaintenanceSeats = async () => {
+    try {
+      const response = await maintenanceAPI.getMaintenanceSeats();
+      if (response.data.success) {
+        setMaintenanceSeats(response.data.maintenanceSeats);
+      }
+    } catch (error) {
+      console.error("Failed to fetch maintenance seats", error);
+    }
+  };
+
   const handleSeatClick = (tableId, seatIndex) => {
-    // UPDATED ID FORMAT: Floor-Table-Seat (e.g., 1-T2-S1)
     const seatId = `${activeFloor}-${tableId}-S${seatIndex + 1}`;
     
-    if (occupiedSeats.includes(seatId)) return;
+    // Prevent selection of occupied OR maintenance seats
+    if (occupiedSeats.includes(seatId) || maintenanceSeats.includes(seatId)) return;
 
     if (selectedSeats.includes(seatId)) {
       setSelectedSeats(prev => prev.filter(id => id !== seatId));
@@ -80,62 +94,71 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
     onConfirm(selectedSeats);
   };
 
-    const RectangularTable = ({ tableConfig, selectedSeats, occupiedSeats, onSeatClick }) => {
-        const { id, x, y, seats, label } = tableConfig;
-        const isLarge = seats === 8;
-        const tableWidth = isLarge ? 160 : 80;
-        const tableHeight = 60; 
+    const RectangularTable = ({ tableConfig, selectedSeats, occupiedSeats, maintenanceSeats, onSeatClick }) => {
+    const { id, x, y, seats, label } = tableConfig;
+    const isLarge = seats === 8;
+    const tableWidth = isLarge ? 160 : 80;
+    const tableHeight = 60;
 
-        const renderSeatRow = (startIndex, count, position) => {
+    const renderSeatRow = (startIndex, count, position) => {
+      return (
+        <div className={`seat-row ${position}`}>
+          {Array.from({ length: count }).map((_, i) => {
+            const seatIndex = startIndex + i;
+            const seatId = `${activeFloor}-${id}-S${seatIndex + 1}`;
+            
+            const isSelected = selectedSeats.includes(seatId);
+            const isOccupied = occupiedSeats.includes(seatId);
+            const isMaintenance = maintenanceSeats.includes(seatId); // NEW
+            
             return (
-                <div className={`seat-row ${position}`}>
-                    {Array.from({ length: count }).map((_, i) => {
-                        const seatIndex = startIndex + i;
-                        
-                        // RECONSTRUCT ID to check against array
-                        const seatId = `${activeFloor}-${id}-S${seatIndex + 1}`;
-                        
-                        const isSelected = selectedSeats.includes(seatId);
-                        const isOccupied = occupiedSeats.includes(seatId);
-                        
-                        return (
-                            <div 
-                                key={seatIndex}
-                                className={`seat-chair ${isSelected ? 'selected' : ''} ${isOccupied ? 'occupied' : ''}`}
-                                onClick={() => onSeatClick(id, seatIndex)}
-                                title={isOccupied ? "Occupied" : `Seat ${seatIndex+1}`}
-                            >
-                                {seatIndex + 1}
-                            </div>
-                        );
-                    })}
-                </div>
+              <div
+                key={seatIndex}
+                className={`seat-chair ${isSelected ? 'selected' : ''} ${isOccupied || isMaintenance ? 'occupied' : ''}`}
+                onClick={() => onSeatClick(id, seatIndex)}
+                title={isMaintenance ? "Under Maintenance" : isOccupied ? "Occupied" : `Seat ${seatIndex + 1}`}
+                style={{
+                  background: isMaintenance ? '#fed7d7' : undefined,
+                  cursor: isMaintenance ? 'not-allowed' : undefined
+                }}
+              >
+                {isMaintenance ? '🔧' : seatIndex + 1}
+              </div>
             );
-        };
-        
-         return (
-            <div className="table-group" style={{ left: `${x}%`, top: `${y}%` }}>
-                {renderSeatRow(0, seats / 2, 'top')}
-                <div className="table-surface" style={{ width: `${tableWidth}px`, height: `${tableHeight}px` }}>{label}</div>
-                {renderSeatRow(seats / 2, seats / 2, 'bottom')}
-            </div>
-         );
+          })}
+        </div>
+      );
+    };
+
+    return (
+      <div className="table-group" style={{ left: `${x}%`, top: `${y}%` }}>
+        {renderSeatRow(0, seats / 2, 'top')}
+        <div className="table-surface" style={{ width: `${tableWidth}px`, height: `${tableHeight}px` }}>
+          {label}
+        </div>
+        {renderSeatRow(seats / 2, seats / 2, 'bottom')}
+      </div>
+    );
   };
 
   const StatusLegend = () => (
     <div className="seat-legend">
-        <div className="legend-item">
-            <div className="legend-box" style={{background: 'white', borderColor: '#cbd5e0'}}></div>
-            <span>Available</span>
-        </div>
-        <div className="legend-item">
-            <div className="legend-box" style={{background: '#48bb78', borderColor: '#2f855a'}}></div>
-            <span>Selected</span>
-        </div>
-        <div className="legend-item">
-            <div className="legend-box" style={{background: '#edf2f7', borderColor: '#e2e8f0'}}></div>
-            <span>Occupied</span>
-        </div>
+      <div className="legend-item">
+        <div className="legend-box" style={{ background: 'white', borderColor: '#cbd5e0' }}></div>
+        <span>Available</span>
+      </div>
+      <div className="legend-item">
+        <div className="legend-box" style={{ background: '#48bb78', borderColor: '#2f855a' }}></div>
+        <span>Selected</span>
+      </div>
+      <div className="legend-item">
+        <div className="legend-box" style={{ background: '#edf2f7', borderColor: '#e2e8f0' }}></div>
+        <span>Occupied</span>
+      </div>
+      <div className="legend-item">
+        <div className="legend-box" style={{ background: '#fed7d7', borderColor: '#fc8181' }}>🔧</div>
+        <span>Maintenance</span>
+      </div>
     </div>
   );
 
@@ -191,7 +214,8 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack }) =>
             onSeatClick={handleSeatClick}
             selectedSeats={selectedSeats}
             occupiedSeats={occupiedSeats}
-          />
+            maintenanceSeats={maintenanceSeats}
+            />
         ))}
       </div>
       
