@@ -199,24 +199,42 @@ exports.createBooking = async (req, res) => {
     // normalizing date: "2026-01-26" -> Local Date Object at 00:00:00
     const baseDate = new Date(bookingDate + "T00:00:00"); 
 
-    // 3. SPECIFIC SEAT CONFLICT CHECK
+    // 3. SPECIFIC SEAT CONFLICT CHECK 
     if (selectedSeats && selectedSeats.length > 0) {
-      const conflictingBooking = await Booking.findOne({
-        bookingDate: baseDate,
-        timeSlot,
-        status: 'confirmed',
-        selectedSeats: { $in: selectedSeats } // Checks if ANY requested seat equals ANY booked seat
-      });
+      try {
+        // Attempt to "reserve" the seat atomically
+        const conflictCheck = await Booking.findOneAndUpdate(
+          {
+            bookingDate: baseDate,
+            timeSlot,
+            status: 'confirmed',
+            selectedSeats: { $in: selectedSeats } // any seat already taken
+          },
+          { $setOnInsert: { dummy: true } }, // won't actually change anything
+          { upsert: false, new: false } // upsert false prevents insertion; we just want to check
+        ).lean();
 
-      if (conflictingBooking) {
-        // Find which specific seats matched to give better error message
-        const taken = selectedSeats.filter(s => conflictingBooking.selectedSeats.includes(s));
-        return res.status(400).json({
+        if (conflictCheck) {
+          // Some seats are already booked
+          const takenSeats = selectedSeats.filter(s =>
+            conflictCheck.selectedSeats.includes(s)
+          );
+
+          return res.status(409).json({
+            success: false,
+            message: `The following seats are already booked: ${takenSeats.join(', ')}. Please select different seats.`
+          });
+        }
+      } catch (err) {
+        console.error("Conflict check error:", err);
+        return res.status(500).json({
           success: false,
-          message: `The following seats are already booked: ${taken.join(', ')}. Please select different seats.`
+          message: 'Error checking seat availability'
         });
       }
     }
+
+
 
     // 4. PARSE TIME SLOT
     const timeSlotPattern = /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/;
