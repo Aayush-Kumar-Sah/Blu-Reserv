@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { bookingAPI, maintenanceAPI } from '../services/api'; 
-import './SeatBooking.css';
+import '../styles/seatbooking.css';
 
 // Floor 1 & 2: 6 tables of 4, 2 tables of 8 (40 seats)
 const FLOOR_1_2_LAYOUT = [
@@ -180,7 +180,7 @@ const SeatBooking = ({ bookingDate, timeSlot, partySize, onConfirm, onBack, embe
           </button>
         )}
         <div style={{textAlign: 'center'}}>
-            <h2 style={{margin: 0, fontSize: embedded ? '1.3rem' : '2rem'}}>Select {partySize} Seats</h2>
+            <h2 style={{margin: 0,  color : '#070606' , fontSize: embedded ? '1.3rem' : '2rem'}}>Select {partySize} Seats</h2>
             <div style={{fontSize: '0.9rem', color:'#666'}}>{bookingDate.toDateString()} | {timeSlot}</div>
         </div>
         {!embedded && <div style={{width: '90px'}}></div>} {/* Spacer for alignment */}

@@ -1,0 +1,158 @@
+/* ===============================
+   HEADER – PREMIUM GLASS
+================================ */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 22px 28px 18px;
+
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+
+  backdrop-filter: blur(18px);
+ 
+  color: #f5e6d3;
+}
+
+/* ---------- TOP ROW ---------- */
+.header-top {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Title */
+.header-top h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #e7d6a8;
+}
+
+/* ---------- USER SECTION ---------- */
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Username badge */
+.header-user span {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(231, 214, 168, 0.14);
+  color: #e7d6a8;
+  border: 1px solid rgba(231, 214, 168, 0.35);
+}
+
+/* Logout button */
+.logout-btn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(231, 214, 168, 0.18);
+  color: #e7d6a8;
+  border-color: rgba(231, 214, 168, 0.6);
+}
+
+/* ---------- SUBTITLE ---------- */
+.header p {
+  max-width: 1200px;
+  margin: 8px auto 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  color: #d8cdb5;
+}
+
+/* ===============================
+   NAV BAR
+================================ */
+
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+
+  padding: 14px 20px 18px;
+  
+
+}
+
+/* Nav buttons */
+.nav-button {
+  padding: 10px 22px;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Hover */
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+/* Active */
+.nav-button.active {
+ background: linear-gradient(to right, #0f3d2e, #1b5e45);
+  color: #f5e6d3;
+  border-color: rgba(231, 214, 168, 0.55);
+  box-shadow: 0 6px 20px rgba(44, 95, 45, 0.45);
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-top h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-user {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .nav-button {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+  }
+}

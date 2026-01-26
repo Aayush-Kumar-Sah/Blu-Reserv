@@ -3,7 +3,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { bookingAPI, restaurantAPI } from '../services/api';
 import { toast } from 'react-toastify';
-
+import '../styles/bookingcalender.css';
 const BookingCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookings, setBookings] = useState([]);

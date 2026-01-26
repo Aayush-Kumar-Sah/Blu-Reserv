@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { bookingAPI } from '../services/api';
 import { toast } from 'react-toastify';
-
+import '../styles/bookinglist.css';
 const BookingList = ({ onModifyBooking, refreshTrigger }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);

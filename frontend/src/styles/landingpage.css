@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* =========================
+   LANDING PAGE WRAPPER
+========================= */
+.landing-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(rgba(10, 20, 25, 0.75), rgba(10, 20, 25, 0.9)),
+    url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4")
+      center / cover no-repeat;
+  font-family: 'Inter', sans-serif;
+  padding: 20px;
+}
+
+/* =========================
+   CARD
+========================= */
+.landing-content {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+  border-radius: 20px;
+  padding: 50px 40px;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  animation: fadeUp 0.7s ease;
+}
+
+/* =========================
+   TEXT
+========================= */
+.landing-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #ffffff, #e7d6a8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-subtitle {
+  font-size: 1.1rem;
+  color: #e5e5e5;
+  margin-bottom: 40px;
+  font-weight: 400;
+}
+
+/* =========================
+   BUTTON GROUP
+========================= */
+.landing-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.start-button {
+  width: 100%;
+  padding: 16px 22px;
+  color: #f8f8f8;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+/* Primary */
+.start-button.primary {
+  background: linear-gradient(135deg, #2c5f2d, #1e4620);
+  color: #f8f8f8;
+  box-shadow: 0 8px 25px rgba(44, 95, 45, 0.5);
+}
+
+.start-button.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(44, 95, 45, 0.7);
+}
+
+/* Secondary */
+.start-button.outline {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+
+.start-button.outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* =========================
+   ANIMATION
+========================= */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 480px) {
+  .landing-content {
+    padding: 40px 25px;
+  }
+
+  .landing-title {
+    font-size: 2.1rem;
+  }
+
+  .landing-subtitle {
+    font-size: 1rem;
+  }
+}
