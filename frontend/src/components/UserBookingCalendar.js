@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 
 const UserBookingCalendar = () => {
   const user = JSON.parse(localStorage.getItem('user'));
-  // console.log("USER FROM STORAGE:", user);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookings, setBookings] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);

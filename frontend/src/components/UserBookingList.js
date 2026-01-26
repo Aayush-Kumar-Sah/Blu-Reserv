@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 
 const UserBookingList = () => {
   const user = JSON.parse(localStorage.getItem('user'));
-  // console.log("USER FROM STORAGE:", user);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
