@@ -3,7 +3,7 @@ import '../App.css';
 import BookingForm from './BookingForm';
 import BookingList from './BookingList';
 import BookingCalendar from './BookingCalendar';
-import MaintenanceManager from './MaintenanceManager'; // ADD THIS IMPORT
+import MaintenanceManager from './MaintenanceManager'; 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useEffect } from 'react';
@@ -11,13 +11,14 @@ import { useNavigate } from 'react-router-dom';
 
 
 function MainApp() {
-    const [activeView, setActiveView] = useState('form');
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
     const manager = JSON.parse(localStorage.getItem('manager'));
     const demoUser = JSON.parse(localStorage.getItem('demoUser'));
 
-    const isManager = !!manager; // ADD THIS LINE
+    const isManager = !!manager; 
+    const [activeView, setActiveView] = useState(isManager ? 'list' : 'form');
+
 
     useEffect(() => {
         if (!user && !manager && !demoUser) {
@@ -54,12 +55,15 @@ function MainApp() {
             </div>
 
             <div className="nav">
-                <button
-                    className={`nav-button ${activeView === 'form' ? 'active' : ''}`}
-                    onClick={() => setActiveView('form')}
-                >
-                    New Booking
-                </button>
+                {/* Hide "New Booking" button for managers */}
+                {!isManager && (
+                    <button
+                        className={`nav-button ${activeView === 'form' ? 'active' : ''}`}
+                        onClick={() => setActiveView('form')}
+                    >
+                        New Booking
+                    </button>
+                )}
                 <button
                     className={`nav-button ${activeView === 'calendar' ? 'active' : ''}`}
                     onClick={() => setActiveView('calendar')}
@@ -70,9 +74,9 @@ function MainApp() {
                     className={`nav-button ${activeView === 'list' ? 'active' : ''}`}
                     onClick={() => setActiveView('list')}
                 >
-                    All Bookings
+                    {isManager ? 'All Bookings' : 'My Bookings'}
                 </button>
-                {/* ADD THIS NEW BUTTON - Only visible for managers */}
+                {/* Only visible for managers */}
                 {isManager && (
                     <button
                         className={`nav-button ${activeView === 'maintenance' ? 'active' : ''}`}
@@ -83,10 +87,9 @@ function MainApp() {
                 )}
             </div>
 
-            {activeView === 'form' && <BookingForm onBookingSuccess={() => setActiveView('list')} />}
+            {activeView === 'form' && !isManager && <BookingForm onBookingSuccess={() => setActiveView('list')} />}
             {activeView === 'calendar' && <BookingCalendar />}
             {activeView === 'list' && <BookingList />}
-            {/* ADD THIS LINE - Render MaintenanceManager when active */}
             {activeView === 'maintenance' && isManager && <MaintenanceManager />}
 
             <ToastContainer
