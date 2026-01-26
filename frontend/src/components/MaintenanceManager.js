@@ -126,7 +126,14 @@ const MaintenanceManager = () => {
                 title={isMaintenance ? 'Under Maintenance' : `Seat ${seatIndex + 1}`}
                 style={{
                   cursor: 'pointer',
-                  background: isMaintenance ? '#fed7d7' : isSelected ? '#48bb78' : 'white'
+                  background: isSelected && isMaintenance
+                    ? '#fb7474'        // 🔴 selected + maintenance
+                    : isMaintenance
+                    ? '#fed7d7'        // 🧰 maintenance
+                    : isSelected
+                    ? '#48bb78'        // ✅ selected
+                    : 'white',
+                  color: isSelected && isMaintenance ? 'white' : 'black'
                 }}
               >
                 {isMaintenance ? '🔧' : seatIndex + 1}

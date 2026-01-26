@@ -19,8 +19,6 @@ function MainApp() {
     }
   }, [user, manager, demoUser, navigate]);
 
-  const isManager = !!manager; 
-
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('manager');
