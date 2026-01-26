@@ -4,16 +4,24 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./config/swagger');
 
 const bookingRoutes = require('./routes/bookingRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const managerRoutes = require('./routes/managerRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
 
-require('./cron/bookingCron');
+if (process.env.NODE_ENV !== "test") {
+  require("./cron/bookingCron");
+}
+
 
 // Middleware
 app.use(cors());
@@ -25,6 +33,8 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/manager', managerRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 const { sendReminderEmail } = require('./services/emailService');
 
@@ -49,6 +59,11 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5555;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
+

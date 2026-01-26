@@ -8,7 +8,7 @@ import SeatBooking from './SeatBooking';
 
 import eatIcon from "../assets/eating.png"
 
-const BookingForm = ({ onBookingSuccess, currentUser }) => { 
+const BookingForm = ({ onBookingSuccess, currentUser, editBooking }) => { 
   const [formData, setFormData] = useState({
     // Auto-fills from SSO data if it exists
     customerName: currentUser?.firstName || currentUser?.name || '',
@@ -34,6 +34,24 @@ const BookingForm = ({ onBookingSuccess, currentUser }) => {
     fetchRestaurantInfo();
     fetchTimeSlots();
   }, []);
+
+  // Pre-fill form when editing an existing booking
+  useEffect(() => {
+    if (editBooking) {
+      setFormData({
+        customerName: editBooking.customerName || '',
+        customerEmail: editBooking.customerEmail || '',
+        customerPhone: editBooking.customerPhone || '',
+        bookingDate: new Date(editBooking.bookingDate),
+        timeSlot: editBooking.timeSlot || '',
+        numberOfSeats: editBooking.numberOfSeats || 1,
+        specialRequests: editBooking.specialRequests || '',
+        notificationPreference: editBooking.notificationPreference || 'both'
+      });
+      setSelectedSeatIds(editBooking.selectedSeats || []);
+      setCurrentStep(1);
+    }
+  }, [editBooking]);
 
   useEffect(() => {
     if (formData.timeSlot && formData.bookingDate) {
@@ -69,7 +87,10 @@ const BookingForm = ({ onBookingSuccess, currentUser }) => {
 
   const checkAvailability = async () => {
     try {
-      const dateStr = formData.bookingDate.toISOString().split('T')[0];
+      const year = formData.bookingDate.getFullYear();
+      const month = String(formData.bookingDate.getMonth() + 1).padStart(2, '0');
+      const day = String(formData.bookingDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       const response = await bookingAPI.checkAvailability(dateStr, formData.timeSlot);
       setAvailability(response.data);
     } catch (error) {
@@ -197,17 +218,25 @@ const BookingForm = ({ onBookingSuccess, currentUser }) => {
     setLoading(true);
 
     try {
+      // If modifying an existing booking, cancel the old one first
+      if (editBooking) {
+        console.log("Cancelling old booking:", editBooking._id);
+        await bookingAPI.cancelBooking(editBooking._id);
+        console.log("Old booking cancelled successfully");
+      }
+
       const bookingData = {
         ...formData,
-        bookingDate: formData.bookingDate.toISOString().split('T')[0],
+        bookingDate: `${formData.bookingDate.getFullYear()}-${String(formData.bookingDate.getMonth() + 1).padStart(2, '0')}-${String(formData.bookingDate.getDate()).padStart(2, '0')}`,
         selectedSeats: selectedSeatIds // Include the selected seats
       };
       console.log("SUBMIT DATA:", bookingData);
 
       const response = await bookingAPI.createBooking(bookingData);
+      console.log("Create booking response:", response.data);
       
-      if (response.data.success) {
-        toast.success('Booking created successfully!');
+      if (response.data && response.data.success) {
+        toast.success(editBooking ? 'Booking modified successfully!' : 'Booking created successfully!');
         setFormData({
           customerName: currentUser?.name || currentUser?.firstName || '',
           customerEmail: currentUser?.email || '',
@@ -220,10 +249,15 @@ const BookingForm = ({ onBookingSuccess, currentUser }) => {
         });
         setSelectedSeatIds([]);
         setAvailability({});
+        setCurrentStep(1);
         if (onBookingSuccess) onBookingSuccess();
+      } else {
+        toast.error('Booking created but response was unexpected');
+        if (onBookingSuccess) onBookingSuccess(); // Still navigate back
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Failed to create booking';
+      console.error("Booking error:", error);
+      const errorMsg = error.response?.data?.message || (editBooking ? 'Failed to modify booking' : 'Failed to create booking');
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -458,7 +492,7 @@ const BookingForm = ({ onBookingSuccess, currentUser }) => {
         <div className="premium-header">
           <img src={eatIcon} alt="Restaurant logo" className="restaurant-logo-icon" />
           <h1 className="premium-title">
-            Reserve Your <span className="text-blu">Table</span>
+            {editBooking ? 'Modify Your' : 'Reserve Your'} <span className="text-blu">Table</span>
           </h1>
           
           {/* Progress Indicator */}

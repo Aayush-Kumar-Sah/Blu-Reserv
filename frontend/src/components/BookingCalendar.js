@@ -12,6 +12,12 @@ const BookingCalendar = () => {
   const [loading, setLoading] = useState(false);
   const [slotAvailability, setSlotAvailability] = useState({});
 
+  const user = JSON.parse(localStorage.getItem('user'));
+  const manager = JSON.parse(localStorage.getItem('manager'));
+  const demoUser = JSON.parse(localStorage.getItem('demoUser'));
+  const isManager = !!manager;
+  const currentUserEmail = user?.email || demoUser?.email || '';
+
   useEffect(() => {
     fetchRestaurantInfo();
     fetchTimeSlots();
@@ -74,7 +80,14 @@ const BookingCalendar = () => {
   };
 
   const getBookingsForSlot = (slot) => {
-    return bookings.filter(b => b.timeSlot === slot && b.status === 'confirmed');
+    const slotBookings = bookings.filter(b => b.timeSlot === slot && b.status === 'confirmed');
+    
+    // For non-managers: show only their bookings
+    if (!isManager && currentUserEmail) {
+      return slotBookings.filter(b => b.customerEmail === currentUserEmail);
+    }
+    
+    return slotBookings;
   };
 
   const formatDate = (date) => {
@@ -107,7 +120,7 @@ const BookingCalendar = () => {
       </div>
 
       <h3 style={{ marginBottom: '15px', color: '#333' }}>
-        Schedule for {formatDate(selectedDate)}
+        {isManager ? 'Schedule' : 'Your Schedule'} for {formatDate(selectedDate)}
       </h3>
 
       {loading ? (
@@ -172,21 +185,26 @@ const BookingCalendar = () => {
                       <div style={{ fontWeight: '600', marginBottom: '8px' }}>
                         Bookings ({slotBookings.length}):
                       </div>
-                      {slotBookings.map((booking) => (
-                        <div 
-                          key={booking._id} 
-                          style={{ 
-                            padding: '8px', 
-                            background: '#f7fafc', 
-                            borderRadius: '6px',
-                            marginBottom: '8px',
-                            fontSize: '0.9rem'
-                          }}
-                        >
-                          <div><strong>{booking.customerName}</strong></div>
-                          <div>Seats: {booking.numberOfSeats} | {booking.customerPhone}</div>
-                        </div>
-                      ))}
+                      {slotBookings.map((booking) => {
+                        const isMyBooking = booking.customerEmail === currentUserEmail;
+                        
+                        return (
+                          <div 
+                            key={booking._id} 
+                            style={{ 
+                              padding: '8px', 
+                              background: isMyBooking ? '#e6f7ff' : '#f7fafc', 
+                              borderRadius: '6px',
+                              marginBottom: '8px',
+                              fontSize: '0.9rem',
+                              border: isMyBooking ? '2px solid #667eea' : 'none'
+                            }}
+                          >
+                            <div><strong>{booking.customerName}</strong></div>
+                            <div>Seats: {booking.numberOfSeats} | {booking.customerPhone}</div>
+                          </div>
+                        );
+                      })}
                     </>
                   ) : (
                     <div style={{ color: '#999', fontStyle: 'italic' }}>
