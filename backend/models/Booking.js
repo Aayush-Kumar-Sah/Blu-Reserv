@@ -11,7 +11,8 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
+    index: true
   },
 
   customerPhone: {
@@ -51,7 +52,7 @@ const bookingSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ['confirmed', 'cancelled', 'completed'],
+    enum: ['confirmed', 'cancelled'],
     default: 'confirmed'
   },
 
@@ -74,12 +75,18 @@ const bookingSchema = new mongoose.Schema({
   type: String,
   enum: ['sms', 'email', 'both'],
   default: 'both'
-},
+  },
 
   specialRequests: {
     type: String,
     default: ''
-  }
+  },
+
+  cancelledBy: {
+    type: String,
+    enum: ['user', 'manager'],
+    default: null
+  },
 
 }, {
   timestamps: true

@@ -3,6 +3,16 @@ const Restaurant = require('../models/Restaurant');
 const { sendBookingConfirmationSMS } = require('../services/twilioService');
 const { sendBookingConfirmationEmail } = require('../services/emailService');
 
+// USER: get own bookings
+exports.getUserBookings = async (req, res) => {
+  try {
+    const { email } = req.query;
+    const bookings = await Booking.find({ customerEmail: email }).sort({ bookingDate: -1, timeSlot: 1 });
+    res.json({ success: true, bookings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 exports.getUserBookings = async (req, res) => {
   try {

@@ -37,7 +37,7 @@ router.get('/', bookingController.getAllBookings);
  *         required: true
  *         description: Date to check (YYYY-MM-DD)
  *       - in: query
- *         name: time
+ *         name: timeSlot
  *         schema:
  *           type: string
  *         required: true
@@ -85,6 +85,28 @@ router.get('/occupied', bookingController.getOccupiedSeats);
  *         description: List of bookings for the date
  */
 router.get('/date/:date', bookingController.getBookingsByDate);
+
+// Get bookings by user email
+// router.get('/user', bookingController.getUserBookings);
+
+/**
+ * @swagger
+ * /api/bookings/user:
+ *   get:
+ *     summary: Get bookings by user email
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User email to filter bookings
+ *     responses:
+ *       200:
+ *         description: List of bookings for the user
+ */
+router.get('/user', bookingController.getUserBookings);
 
 // Get booking by ID
 /**

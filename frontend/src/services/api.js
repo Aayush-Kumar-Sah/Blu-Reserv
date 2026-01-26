@@ -11,6 +11,8 @@ const api = axios.create({
 
 // Booking APIs
 export const bookingAPI = {
+  getUserBookings: (email) => api.get('/bookings/user', { params: { email } }),
+
   getAllBookings: () => api.get('/bookings'),
 
   getUserBookings: (email) => api.get(`/bookings/user/${encodeURIComponent(email)}`),
