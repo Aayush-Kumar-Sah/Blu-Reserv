@@ -506,6 +506,8 @@ body {
   padding: 20px;
   margin-bottom: 15px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .calendar-slot-card:hover {
@@ -1085,6 +1087,58 @@ body {
 
 .badge-text {
   white-space: nowrap;
+}
+
+/* Glow effect for user booking */
+.user-booking-glow {
+  box-shadow: 0 0 12px 2px rgba(102, 126, 234, 0.5); /* subtle blue glow */
+  border: 1px solid #667eea;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.user-booking-glow:hover {
+  box-shadow: 0 0 18px 4px rgba(102, 126, 234, 0.7);
+  transform: translateY(-2px);
+}
+
+/* Card highlight */
+.user-booking-highlight {
+  position: relative;
+  border: 1.5px solid #667eea;
+  box-shadow: 0 0 14px rgba(102, 126, 234, 0.45);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.user-booking-highlight:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.65);
+}
+
+.user-booking-ribbon {
+  position: absolute;
+  top: 14px;
+  right: -38px;
+  width: 140px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 6px 0;
+  transform: rotate(45deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 5;
+}
+
+/* Small notch effect */
+.user-booking-tag::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  border-top: 6px solid #4c51bf;
+  border-left: 6px solid transparent;
 }
 
 /* Premium Form */

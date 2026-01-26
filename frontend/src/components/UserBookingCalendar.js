@@ -80,7 +80,7 @@ const UserBookingCalendar = () => {
       b =>
         b.timeSlot === slot &&
         b.status === 'confirmed' &&
-        b.customerEmail === user.email
+        b.customerEmail === user.email.toLowerCase()
     );
   };
 
@@ -125,7 +125,7 @@ const UserBookingCalendar = () => {
       ) : (
         <div className="grid grid-2">
           {timeSlots.map((slot) => {
-            const slotBookings = getUserBookingsForSlot(slot);
+            const userSlotBookings = getUserBookingsForSlot(slot);
             const availability = slotAvailability[slot] || {};
             const totalSeats = availability.totalSeats || 100;
             const availableSeats = availability.availableSeats || 0;
@@ -142,8 +142,21 @@ const UserBookingCalendar = () => {
             else if (occupancyRate < 80) progressClass += 'medium';
             else progressClass += 'high';
 
+            if (userSlotBookings.length > 0) {
+              cardClass += ' user-booking-glow';
+            }
+
             return (
-              <div key={slot} className={cardClass}>
+              <div
+                key={slot}
+                className={`${cardClass} ${userSlotBookings.length > 0 ? 'user-booking-highlight' : ''}`}
+              >
+                {userSlotBookings.length > 0 && (
+                  <div className="user-booking-ribbon">
+                    BOOKED
+                  </div>
+                )}
+
                 <div className="card-header" style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between',
@@ -174,12 +187,12 @@ const UserBookingCalendar = () => {
                     </div>
                   </div>
                   
-                  {slotBookings.length > 0 ? (
+                  {userSlotBookings.length > 0 ? (
                     <>
                       <div style={{ fontWeight: '600', marginBottom: '8px' }}>
-                        Your Booking{slotBookings.length > 1 ? 's' : ''}:
+                        Your Booking{userSlotBookings.length > 1 ? 's' : ''}:
                       </div>
-                      {slotBookings.map((booking) => (
+                      {userSlotBookings.map((booking) => (
                         <div 
                           key={booking._id} 
                           style={{ 
