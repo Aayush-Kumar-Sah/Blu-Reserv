@@ -10,6 +10,7 @@ const swaggerSpecs = require('./config/swagger');
 const bookingRoutes = require('./routes/bookingRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const managerRoutes = require('./routes/managerRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const app = express();
 
 // Connect to MongoDB
@@ -27,6 +28,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/manager', managerRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 const { sendReminderEmail } = require('./services/emailService');

@@ -13,6 +13,8 @@ const api = axios.create({
 export const bookingAPI = {
   getAllBookings: () => api.get('/bookings'),
 
+  getUserBookings: (email) => api.get(`/bookings/user/${encodeURIComponent(email)}`),
+
   getBookingById: (id) => api.get(`/bookings/${id}`),
 
   getBookingsByDate: (date) => api.get(`/bookings/date/${date}`),
@@ -45,6 +47,18 @@ export const restaurantAPI = {
 // Manager APIs
 export const managerAPI = {
   login: (credentials) => api.post('/manager/login', credentials),
+};
+
+export const maintenanceAPI = {
+  getMaintenanceSeats: () => api.get('/maintenance'),
+  
+  getAllRecords: () => api.get('/maintenance/records'),
+  
+  markSeatMaintenance: (data) => api.post('/maintenance', data),
+  
+  removeSeatMaintenance: (id) => api.delete(`/maintenance/${id}`),
+  
+  bulkRemoveMaintenance: (seatIds) => api.post('/maintenance/bulk', { seatIds })
 };
 
 export default api;

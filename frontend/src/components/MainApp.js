@@ -3,6 +3,7 @@ import '../App.css';
 import BookingForm from './BookingForm';
 import BookingList from './BookingList';
 import BookingCalendar from './BookingCalendar';
+import MaintenanceManager from './MaintenanceManager'; // ADD THIS IMPORT
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useEffect } from 'react';
@@ -16,10 +17,12 @@ function MainApp() {
     const manager = JSON.parse(localStorage.getItem('manager'));
     const demoUser = JSON.parse(localStorage.getItem('demoUser'));
 
+    const isManager = !!manager; // ADD THIS LINE
+
     useEffect(() => {
-    if (!user && !manager && !demoUser) {
-        navigate('/');
-    }
+        if (!user && !manager && !demoUser) {
+            navigate('/');
+        }
     }, [user, manager, demoUser, navigate]);
 
     const handleLogout = () => {
@@ -45,7 +48,6 @@ function MainApp() {
                             Logout
                         </button>
                     </div>
-
                 </div>
 
                 <p>Book your seats for an amazing dining experience</p>
@@ -70,11 +72,22 @@ function MainApp() {
                 >
                     All Bookings
                 </button>
+                {/* ADD THIS NEW BUTTON - Only visible for managers */}
+                {isManager && (
+                    <button
+                        className={`nav-button ${activeView === 'maintenance' ? 'active' : ''}`}
+                        onClick={() => setActiveView('maintenance')}
+                    >
+                        🔧 Maintenance
+                    </button>
+                )}
             </div>
 
             {activeView === 'form' && <BookingForm onBookingSuccess={() => setActiveView('list')} />}
             {activeView === 'calendar' && <BookingCalendar />}
             {activeView === 'list' && <BookingList />}
+            {/* ADD THIS LINE - Render MaintenanceManager when active */}
+            {activeView === 'maintenance' && isManager && <MaintenanceManager />}
 
             <ToastContainer
                 position="top-right"
