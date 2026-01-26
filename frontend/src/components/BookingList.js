@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { bookingAPI } from '../services/api';
 import { toast } from 'react-toastify';
 
-const BookingList = () => {
+const BookingList = ({ onModifyBooking, refreshTrigger }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -19,7 +19,7 @@ const BookingList = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [refreshTrigger]);
 
   const fetchBookings = async () => {
     try {
@@ -29,6 +29,7 @@ const BookingList = () => {
         ? await bookingAPI.getAllBookings()
         : await bookingAPI.getUserBookings(currentUserEmail);
       
+      console.log("Fetched bookings:", response.data.bookings);
       setBookings(response.data.bookings);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -96,6 +97,28 @@ const BookingList = () => {
       }
     } catch (error) {
       toast.error('Failed to delete booking');
+    }
+  };
+
+  const handleUserDeleteBooking = async (id, status) => {
+    if (!window.confirm('Are you sure you want to delete this booking?')) {
+      return;
+    }
+
+    try {
+      // If still confirmed, cancel it first
+      if (status === 'confirmed') {
+        await bookingAPI.cancelBooking(id);
+      }
+      
+      // Then delete
+      const response = await bookingAPI.deleteBooking(id);
+      if (response.data.success) {
+        toast.success('Booking removed successfully');
+        fetchBookings();
+      }
+    } catch (error) {
+      toast.error('Failed to remove booking');
     }
   };
 
@@ -334,17 +357,37 @@ const BookingList = () => {
                     <td>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {booking.status === 'confirmed' && !isPast && (
-                        <button
-                          onClick={() => handleCancelBooking(booking._id, booking.bookingDate, booking.timeSlot)}
-                          className="btn btn-warning"
-                          style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                        >
-                          Cancel
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleCancelBooking(booking._id, booking.bookingDate, booking.timeSlot)}
+                            className="btn btn-warning"
+                            style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                          >
+                            Cancel
+                          </button>
+                          {!isManager && onModifyBooking && (
+                            <button
+                              onClick={() => onModifyBooking(booking)}
+                              className="btn btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                            >
+                              Modify
+                            </button>
+                          )}
+                        </>
                       )}
                         {isManager && (
                           <button
                             onClick={() => handleDeleteBooking(booking._id)}
+                            className="btn btn-danger"
+                            style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                          >
+                            Delete
+                          </button>
+                        )}
+                        {!isManager && (
+                          <button
+                            onClick={() => handleUserDeleteBooking(booking._id, booking.status)}
                             className="btn btn-danger"
                             style={{ padding: '6px 12px', fontSize: '0.85rem' }}
                           >

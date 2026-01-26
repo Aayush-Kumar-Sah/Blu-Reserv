@@ -18,6 +18,8 @@ function MainApp() {
 
     const isManager = !!manager; 
     const [activeView, setActiveView] = useState(isManager ? 'list' : 'form');
+    const [editBooking, setEditBooking] = useState(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
 
     useEffect(() => {
@@ -31,6 +33,17 @@ function MainApp() {
         localStorage.removeItem('manager');
         localStorage.removeItem('demoUser');
         navigate('/');
+    };
+
+    const handleModifyBooking = (booking) => {
+        setEditBooking(booking);
+        setActiveView('form');
+    };
+
+    const handleBookingSuccess = () => {
+        setEditBooking(null);
+        setRefreshTrigger(prev => prev + 1);
+        setActiveView('list');
     };
     
     return (
@@ -86,9 +99,9 @@ function MainApp() {
                     </button>
                 )}
             </div>
-            {activeView === 'form' && !isManager && <BookingForm onBookingSuccess={() => setActiveView('list')} currentUser={user || demoUser}/>}
+            {activeView === 'form' && !isManager && <BookingForm onBookingSuccess={handleBookingSuccess} currentUser={user || demoUser} editBooking={editBooking}/>}
             {activeView === 'calendar' && <BookingCalendar />}
-            {activeView === 'list' && <BookingList />}
+            {activeView === 'list' && <BookingList onModifyBooking={handleModifyBooking} refreshTrigger={refreshTrigger} />}
             {activeView === 'maintenance' && isManager && <MaintenanceManager />}
 
             <ToastContainer
