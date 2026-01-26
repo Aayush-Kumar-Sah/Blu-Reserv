@@ -112,6 +112,32 @@ const UserBookingList = () => {
 
   const stats = getStatistics();
 
+  const renderSeats = (booking) => {
+    const seats =
+      booking.seats ||
+      booking.seatNumbers ||
+      booking.selectedSeats;
+
+    if (!seats || seats.length === 0) {
+      return <span style={{ color: '#9ca3af' }}>—</span>;
+    }
+
+    if (Array.isArray(seats)) {
+      return (
+        <span style={{ fontSize: '0.85rem', color: '#1f2937' }}>
+          {seats.join(', ')}
+        </span>
+      );
+    }
+
+    // If seats are strings (seat IDs)
+    return (
+      <span style={{ fontSize: '0.85rem', color: '#1f2937' }}>
+        {seats}
+      </span>
+    );
+  };
+
   return (
     <div className="container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
@@ -189,6 +215,7 @@ const UserBookingList = () => {
                 <th>Date</th>
                 <th>Time Slot</th>
                 <th>Seats</th>
+                <th>Seat Numbers</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -202,6 +229,7 @@ const UserBookingList = () => {
                   <td>{formatDate(booking.bookingDate)}</td>
                   <td>{booking.timeSlot}</td>
                   <td>{booking.numberOfSeats}</td>
+                  <td>{renderSeats(booking)}</td>
                   <td>
                     <span className={`badge badge-${
                       booking.status === 'confirmed' ? 'success' : 
