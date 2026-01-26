@@ -14,9 +14,14 @@ const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
 
-require('./cron/bookingCron');
+if (process.env.NODE_ENV !== "test") {
+  require("./cron/bookingCron");
+}
+
 
 // Middleware
 app.use(cors());
@@ -54,6 +59,11 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5555;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
+
