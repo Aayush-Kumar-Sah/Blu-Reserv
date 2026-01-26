@@ -13,6 +13,8 @@ const api = axios.create({
 export const bookingAPI = {
   getAllBookings: () => api.get('/bookings'),
 
+  getUserBookings: (email) => api.get(`/bookings/user/${encodeURIComponent(email)}`),
+
   getBookingById: (id) => api.get(`/bookings/${id}`),
 
   getBookingsByDate: (date) => api.get(`/bookings/date/${date}`),

@@ -106,6 +106,30 @@ router.get('/date/:date', bookingController.getBookingsByDate);
  *       404:
  *         description: Booking not found
  */
+
+router.get('/user/:email', bookingController.getUserBookings);
+
+// Get booking by ID
+/**
+ * @swagger
+ * /api/bookings/{id}:
+ *   get:
+ *     summary: Get booking by ID
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Booking ID
+ *     responses:
+ *       200:
+ *         description: Booking details
+ *       404:
+ *         description: Booking not found
+ */
+
 router.get('/:id', bookingController.getBookingById);
 
 // Create new booking
