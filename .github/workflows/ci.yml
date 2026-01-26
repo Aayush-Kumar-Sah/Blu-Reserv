@@ -64,3 +64,26 @@ jobs:
           python3 -m json.tool backend/package.json > /dev/null && echo "✓ Backend package.json is valid"
           python3 -m json.tool frontend/package.json > /dev/null && echo "✓ Frontend package.json is valid"
         continue-on-error: true
+
+  backend-tests:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25.x'
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm install
+      
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test
+        env:
+          NODE_ENV: test
