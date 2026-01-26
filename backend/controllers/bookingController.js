@@ -4,6 +4,24 @@ const { sendBookingConfirmationSMS } = require('../services/twilioService');
 const { sendBookingConfirmationEmail } = require('../services/emailService');
 
 
+exports.getUserBookings = async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const bookings = await Booking.find({ 
+      customerEmail: email.toLowerCase()
+    }).sort({ bookingDate: -1, timeSlot: 1 });
+
+    res.json({ success: true, bookings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Get all bookings
 exports.getAllBookings = async (req, res) => {
   try {
