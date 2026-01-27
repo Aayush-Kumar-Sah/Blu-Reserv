@@ -182,7 +182,7 @@ const BookingCalendar = () => {
                   
                   {slotBookings.length > 0 ? (
                     <>
-                      <div style={{ fontWeight: '600', marginBottom: '8px' }}>
+                      <div style={{ fontWeight: '600', marginBottom: '8px' , color: '#eae7e7' }}>
                         Bookings ({slotBookings.length}):
                       </div>
                       {slotBookings.map((booking) => {
@@ -193,11 +193,11 @@ const BookingCalendar = () => {
                             key={booking._id} 
                             style={{ 
                               padding: '8px', 
-                              background: isMyBooking ? '#e6f7ff' : '#f7fafc', 
+                              background: isMyBooking ? '#171a1c' : '#181818', 
                               borderRadius: '6px',
                               marginBottom: '8px',
                               fontSize: '0.9rem',
-                              border: isMyBooking ? '2px solid #667eea' : 'none'
+                              border: isMyBooking ? '2px solid #1edd7a' : '2px solid #1edd7a'
                             }}
                           >
                             <div><strong>{booking.customerName}</strong></div>
