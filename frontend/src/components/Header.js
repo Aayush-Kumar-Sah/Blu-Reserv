@@ -1,61 +1,59 @@
 import React from "react";
-import "../styles/header.css";
+import '../styles/header.css';
 
-const Header = ({
-  activeView,
-  setActiveView,
-  onLogout,
-  user,
-  manager,
-  demoUser,
-}) => {
+const Header = ({ activeView, setActiveView, onLogout, user, manager, demoUser, isManager }) => {
   return (
-    <>
-      {/* ===== HEADER ===== */}
-      <div className="header">
-        <div className="header-top">
-          <h1>Restaurant Seat Booking</h1>
-
-          <div className="header-user">
-            {manager && <span>Manager</span>}
-            {!manager && demoUser && <span>Hi, Demo</span>}
-            {!manager && !demoUser && user && (
-              <span>Hi, {user.firstName}</span>
-            )}
-
-            <button className="logout-btn" onClick={onLogout}>
-              Logout
-            </button>
-          </div>
+    <div className="header">
+      <div className="header-top">
+        <h1>Restaurant Seat Booking</h1>
+        <div className="header-user">
+          {manager && <span>Manager</span>}
+          {!manager && demoUser && <span>Hi, Demo</span>}
+          {!manager && !demoUser && user && <span>Hi, {user.firstName}</span>}
+          <button className="logout-btn" onClick={onLogout}>
+            Logout
+          </button>
         </div>
-
-        <p>Book your seats for an amazing dining experience</p>
       </div>
+      <p>Book your seats for an amazing dining experience</p>
 
-      {/* ===== NAVIGATION ===== */}
+      {/* Navigation */}
       <div className="nav">
-        <button
-          className={`nav-button ${activeView === "form" ? "active" : ""}`}
-          onClick={() => setActiveView("form")}
-        >
-          New Booking
-        </button>
-
+        {/* Hide "New Booking" button for managers */}
+        {!isManager && (
+          <button
+            className={`nav-button ${activeView === "form" ? "active" : ""}`}
+            onClick={() => setActiveView("form")}
+          >
+            New Booking
+          </button>
+        )}
+        
         <button
           className={`nav-button ${activeView === "calendar" ? "active" : ""}`}
           onClick={() => setActiveView("calendar")}
         >
           Calendar View
         </button>
-
+        
         <button
           className={`nav-button ${activeView === "list" ? "active" : ""}`}
           onClick={() => setActiveView("list")}
         >
-          All Bookings
+          {isManager ? "All Bookings" : "My Bookings"}
         </button>
+
+        {/* Show Maintenance button only for managers */}
+        {isManager && (
+          <button
+            className={`nav-button ${activeView === "maintenance" ? "active" : ""}`}
+            onClick={() => setActiveView("maintenance")}
+          >
+            🔧 Maintenance
+          </button>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

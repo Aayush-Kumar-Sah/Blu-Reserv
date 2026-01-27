@@ -144,7 +144,7 @@
 }
 
 .calendar-slot-card.full {
-  border-color: rgba(239,68,68,0.45);
+  border-color: rgba(230, 214, 214, 0.45);
   opacity: 0.9;
 }
 
@@ -193,7 +193,8 @@
 .card-body {
   margin-top: 14px;
   font-size: 0.9rem;
-  color: #e5e7eb;
+  color: #000102;
+  border-color: #48bb78;
 }
 
 /* ===============================
@@ -202,7 +203,7 @@
 .progress-bar {
   width: 100%;
   height: 10px;
-  background: rgba(255,255,255,0.18);
+  background: rgba(247, 243, 243, 0.18);
   border-radius: 999px;
   overflow: hidden;
 }

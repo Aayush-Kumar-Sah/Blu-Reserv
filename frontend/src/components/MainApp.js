@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import BookingForm from "../components/BookingForm";
 import BookingCalendar from "../components/BookingCalendar";
 import BookingList from "../components/BookingList";
+import MaintenanceManager from "../components/MaintenanceManager";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,12 +13,16 @@ import "react-toastify/dist/ReactToastify.css";
 import "../App.css"; // IMPORTANT
 
 function MainApp() {
-  const [activeView, setActiveView] = useState("form");
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
   const manager = JSON.parse(localStorage.getItem("manager"));
   const demoUser = JSON.parse(localStorage.getItem("demoUser"));
+
+  const isManager = !!manager;
+
+  // Set default view based on user type
+  const [activeView, setActiveView] = useState(isManager ? "list" : "form");
 
   useEffect(() => {
     if (!user && !manager && !demoUser) {
@@ -43,18 +48,21 @@ function MainApp() {
         user={user}
         manager={manager}
         demoUser={demoUser}
+        isManager={isManager}
       />
 
       {/* PAGE CONTENT */}
       <div className="page-content">
-        {activeView === "form" && (
+        {/* Only show booking form for non-managers */}
+        {activeView === "form" && !isManager && (
           <BookingForm
             onBookingSuccess={() => setActiveView("list")}
-            currentUser={user || manager || demoUser}
+            currentUser={user || demoUser}
           />
         )}
         {activeView === "calendar" && <BookingCalendar />}
         {activeView === "list" && <BookingList />}
+        {activeView === "maintenance" && isManager && <MaintenanceManager />}
       </div>
 
       <ToastContainer position="top-right" autoClose={3000} />
