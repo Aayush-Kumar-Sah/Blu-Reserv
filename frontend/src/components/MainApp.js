@@ -34,7 +34,7 @@ function MainApp() {
 
   return (
     <div className={`app-background ${activeView}`}>
-      
+
       {/* HEADER + NAV */}
       <Header
         activeView={activeView}
@@ -48,7 +48,10 @@ function MainApp() {
       {/* PAGE CONTENT */}
       <div className="page-content">
         {activeView === "form" && (
-          <BookingForm onBookingSuccess={() => setActiveView("list")} />
+          <BookingForm
+            onBookingSuccess={() => setActiveView("list")}
+            currentUser={user || manager || demoUser}
+          />
         )}
         {activeView === "calendar" && <BookingCalendar />}
         {activeView === "list" && <BookingList />}
